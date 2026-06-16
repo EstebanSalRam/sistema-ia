@@ -364,6 +364,115 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 </main>
 
 <script>
+// ============================================================
+// SINCRONIZACIÓN GOOGLE SHEETS
+// ============================================================
+const URL_SYNC_KEY = '_sistema_ia_script_url';
+
+function getScriptUrl(){
+  return localStorage.getItem(URL_SYNC_KEY) || '';
+}
+
+async function syncSave(clave, valor){
+  const url = getScriptUrl();
+  if(!url) return false;
+  try{
+    const body = JSON.stringify({
+      artefacto: 'centro_comando',
+      clave: clave,
+      valor: typeof valor === 'string' ? valor : JSON.stringify(valor)
+    });
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: body
+    });
+    const data = await res.json();
+    return data.ok !== false;
+  } catch(e){
+    console.warn('syncSave error:', e);
+    return false;
+  }
+}
+
+async function syncLoad(clave){
+  const url = getScriptUrl();
+  if(!url) return null;
+  try{
+    const params = new URLSearchParams({artefacto: 'centro_comando', clave: clave});
+    const res = await fetch(`${url}?${params}`);
+    const data = await res.json();
+    if(data.ok !== false && data.data !== null && data.data !== undefined){
+      return data.data;
+    }
+  } catch(e){
+    console.warn('syncLoad error:', e);
+  }
+  return null;
+}
+
+function mostrarStatusSync(ok){
+  let el = document.getElementById('_sync_status_bar');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_sync_status_bar';
+    el.style.cssText = 'position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = ok ? '✓ Sincronizado con Google Sheets' : '⚠ Guardado solo localmente';
+  el.style.background = ok ? '#EAF5EE' : '#FDF3E0';
+  el.style.color = ok ? '#1A7A3C' : '#9A6400';
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 2500);
+}
+
+function mostrarConfigSync(){
+  const ex = document.getElementById('_sync_overlay');
+  if(ex){ ex.remove(); return; }
+  const url = getScriptUrl();
+  const ov = document.createElement('div');
+  ov.id = '_sync_overlay';
+  ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">⚙ Configurar sincronización</div>
+      <div style="font-size:12px;color:#5C5A54;margin-bottom:14px;line-height:1.5;">Pega tu URL de Google Apps Script para sincronizar datos entre Mac, iPhone e iPad.</div>
+      <input id="_sync_url_inp" type="url" value="${url}"
+        placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%;padding:10px;border:1px solid #C8C3B8;border-radius:6px;font-size:11px;font-family:monospace;margin-bottom:10px;outline:none;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="_guardarSyncUrl()" style="background:#1A1915;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;">Guardar y verificar</button>
+        <button onclick="document.getElementById('_sync_overlay').remove()" style="background:#F0EEE9;border:1px solid #C8C3B8;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Cerrar</button>
+      </div>
+      <div id="_sync_result" style="margin-top:10px;font-size:11px;line-height:1.5;"></div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+async function _guardarSyncUrl(){
+  const url = document.getElementById('_sync_url_inp').value.trim();
+  const res = document.getElementById('_sync_result');
+  if(!url || !url.startsWith('https://')){
+    res.textContent = 'URL inválida.'; res.style.color = '#B02A2A'; return;
+  }
+  localStorage.setItem(URL_SYNC_KEY, url);
+  res.textContent = 'Verificando conexión...'; res.style.color = '#9A6400';
+  try{
+    const r = await fetch(`${url}?${new URLSearchParams({artefacto:'ping',clave:'test'})}`);
+    const d = await r.json();
+    if(d.ok !== false){
+      res.textContent = '✓ Conexión exitosa. Sincronización activa entre todos tus dispositivos.';
+      res.style.color = '#1A7A3C';
+      localStorage.setItem('_sistema_ia_last_sync', new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+      setTimeout(() => document.getElementById('_sync_overlay')?.remove(), 1800);
+    } else throw new Error('respuesta inválida');
+  } catch(e){
+    res.textContent = 'No se pudo conectar. Verifica que la URL sea correcta y que el acceso sea "Cualquier usuario" en Apps Script.';
+    res.style.color = '#B02A2A';
+  }
+}
+// ============================================================
+
 const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
