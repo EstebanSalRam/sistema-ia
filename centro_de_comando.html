@@ -665,14 +665,15 @@ function showPanel(id){
   event.target.classList.add('active');
 }
 
-function init(){
+async function init(){
   const hoy=new Date(), d=hoy.getDay(), n=hoy.getDate(), m=hoy.getMonth(), y=hoy.getFullYear();
   document.getElementById('date-chip').textContent=DIAS[d]+' '+n+'/'+(m+1)+'/'+y;
   document.getElementById('topbar-sub').textContent='Sistema IA · Semana de arranque · '+DIAS[d];
   renderChecklist();
   mostrarPrompt('arranque',document.querySelector('.pm-tab'));
-  cargar();
+  await cargar();
   updateDashboard();
+  initGuia();
   setInterval(guardar,30000);
 }
 

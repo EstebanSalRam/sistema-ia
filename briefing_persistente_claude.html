@@ -630,7 +630,7 @@ function g(id){ const e=document.getElementById(id); return e?e.value:''; }
 function s(id,v){ const e=document.getElementById(id); if(e&&v!==undefined&&v!==null) e.value=v; }
 
 // ---- INIT ----
-function init(){
+async function init(){
   const hoy=new Date(), d=hoy.getDay(), n=hoy.getDate(), m=hoy.getMonth(), y=hoy.getFullYear();
   document.getElementById('dn').textContent=n;
   document.getElementById('dm').textContent=MESES[m];
@@ -646,7 +646,7 @@ function init(){
   if(pillHoy) pillHoy.textContent = DIAS[d];
   if(pillReu) pillReu.textContent = esDiaJunta ? '📅 Reunión hoy 12:00' : 'Sin reunión hoy';
   if(pillReu && esDiaJunta) { pillReu.style.background='var(--coral-bg)'; pillReu.style.color='var(--coral)'; pillReu.style.borderColor='var(--coral-b)'; }
-  cargarDia();
+  await cargarDia();
   renderHistorial();
   updateStats();
   setInterval(guardarDia,30000);

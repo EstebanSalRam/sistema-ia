@@ -621,11 +621,11 @@ function getSemanaLabel() {
   return `Semana ${lunes.getDate()} — ${viernes.getDate()} ${MESES[viernes.getMonth()]} ${viernes.getFullYear()}`;
 }
 
-function init() {
+async function init() {
   const label = getSemanaLabel();
   document.getElementById('semana-chip').textContent = label;
   document.getElementById('topbar-sub').textContent = label;
-  cargarSemana();
+  await cargarSemana();
   renderHistorial();
   setInterval(guardarSemana, 30000);
 }
