@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Comando">
+<meta name="theme-color" content="#1A1915">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A1915'/><text y='.9em' font-size='70' x='15'>⌘</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centro de comando — Sistema IA</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#F7F6F3;--surface:#FFF;--surface2:#F0EEE9;
+  --border:#E2DED6;--border2:#C8C3B8;
+  --text:#1A1915;--text2:#5C5A54;--text3:#9A9890;
+  --blue:#1A5FAA;--blue-bg:#EBF2FB;--blue-b:#B8D0EE;
+  --amber:#9A6400;--amber-bg:#FDF3E0;--amber-b:#F0D598;
+  --red:#B02A2A;--red-bg:#FDECEA;--red-b:#F5C0BC;
+  --green:#1A7A3C;--green-bg:#EAF5EE;--green-b:#B6E0C5;
+  --purple:#5B3FBF;--purple-bg:#F0EDFB;--purple-b:#CBBFF5;
+  --coral:#993C1D;--coral-bg:#FAECE7;--coral-b:#F5C4B3;
+  --gray-bg:#F1EFE8;--gray-b:#D3D1C7;--gray-t:#444441;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+.logo{width:32px;height:32px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;flex-shrink:0;}
+.topbar-title{font-size:13px;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--text3);}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.date-chip{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.btn{font-size:12px;font-weight:500;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap;}
+.btn:hover{background:var(--surface2);}
+.btn-primary{background:var(--text);color:#fff;border-color:var(--text);}
+.btn-primary:hover{background:#333;}
+.btn-ia{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b);}
+.btn-ia:hover{background:#e5dff9;}
+
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;}
+.tab{font-size:12px;font-weight:500;padding:10px 14px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--text);border-bottom-color:var(--text);}
+.tab:hover:not(.active){color:var(--text2);}
+
+.main{max-width:860px;margin:0 auto;padding:20px 16px 60px;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.metric{background:var(--surface2);border-radius:var(--rs);padding:12px;text-align:center;}
+.metric-val{font-size:22px;font-weight:600;color:var(--text);line-height:1;}
+.metric-lbl{font-size:11px;color:var(--text3);margin-top:3px;}
+
+.prog-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:14px;}
+.prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.prog-title{font-size:12px;font-weight:500;color:var(--text);}
+.prog-pct{font-family:var(--mono);font-size:12px;font-weight:500;}
+.prog-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+.section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.task-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:8px;}
+.task-day{padding:8px 14px;background:var(--surface2);border-bottom:0.5px solid var(--border);font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;justify-content:space-between;}
+.task-day-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;border:0.5px solid;}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);transition:background .1s;}
+.task-item:last-child{border-bottom:none;}
+.task-item:hover{background:var(--surface2);}
+.task-item.done-item{opacity:.5;}
+.task-item.done-item .task-title{text-decoration:line-through;}
+.chk{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.chk.done{background:var(--green);border-color:var(--green);}
+.chk.done::after{content:'✓';color:#fff;font-size:11px;font-weight:600;}
+.task-body{flex:1;min-width:0;}
+.task-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:3px;}
+.task-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.task-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;border:0.5px solid;display:inline-block;margin-top:4px;}
+
+.artefact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.artefact-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;}
+.artefact-icon{font-size:20px;margin-bottom:8px;}
+.artefact-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.artefact-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.artefact-status{font-size:10px;font-weight:500;padding:3px 8px;border-radius:10px;border:0.5px solid;display:inline-block;margin-bottom:8px;}
+
+.prompt-master{background:var(--purple-bg);border:0.5px solid var(--purple-b);border-radius:var(--r);padding:16px;margin-bottom:14px;}
+.prompt-master-label{font-size:10px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.prompt-master-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.pm-tab{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;cursor:pointer;border:0.5px solid var(--purple-b);color:var(--purple);background:transparent;transition:background .1s;}
+.pm-tab.active{background:var(--purple);color:#fff;border-color:var(--purple);}
+.prompt-text{font-family:var(--mono);font-size:11px;color:var(--purple);background:rgba(255,255,255,.6);border-radius:var(--rs);padding:12px;line-height:1.7;cursor:pointer;border:0.5px solid var(--purple-b);white-space:pre-wrap;}
+.prompt-text:hover{background:rgba(255,255,255,.85);}
+
+.custom-task-box{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;}
+.field{width:100%;padding:9px 11px;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--rs);font-family:var(--sans);font-size:12px;color:var(--text);outline:none;transition:border-color .12s;}
+.field:focus{border-color:var(--border2);background:var(--surface);}
+.field::placeholder{color:var(--text3);}
+
+.semana-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.semana-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.semana-title{font-size:13px;font-weight:500;color:var(--text);}
+.semana-sub{font-size:11px;color:var(--text3);}
+
+@media(max-width:560px){.metrics-row{grid-template-columns:repeat(2,1fr);}.artefact-grid{grid-template-columns:1fr;}}
+
+.crono-bloque{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.crono-header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--border);}
+.crono-hora{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text2);min-width:88px;flex-shrink:0;}
+.crono-titulo{font-size:12px;font-weight:600;color:var(--text);}
+.crono-art{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;border:0.5px solid;margin-left:auto;white-space:nowrap;}
+.crono-steps{list-style:none;padding:0;}
+.crono-step{display:flex;gap:10px;align-items:flex-start;padding:9px 14px;border-bottom:0.5px solid var(--border);}
+.crono-step:last-child{border-bottom:none;}
+.step-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.step-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.step-tip{font-size:11px;color:var(--amber);background:var(--amber-bg);border-radius:var(--rs);padding:5px 9px;margin-top:5px;line-height:1.5;border:0.5px solid var(--amber-b);}
+.step-art-ref{font-size:11px;font-family:var(--mono);color:var(--purple);background:var(--purple-bg);border-radius:var(--rs);padding:4px 8px;margin-top:4px;display:inline-block;border:0.5px solid var(--purple-b);}
+.dia-intro{background:var(--surface2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;border:0.5px solid var(--border);}
+.dia-intro-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.dia-intro-desc{font-size:11px;color:var(--text2);line-height:1.6;}
+.dia-resumen{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.dia-res-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;text-align:center;}
+.dia-res-num{font-size:18px;font-weight:600;color:var(--text);}
+.dia-res-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="logo">⌘</div>
+    <div>
+      <div class="topbar-title">Centro de comando — Sistema IA</div>
+      <div class="topbar-sub" id="topbar-sub">Cargando...</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="date-chip" id="date-chip"></div>
+    <button class="btn" onclick="mostrarConfigSync()" title="Configurar sincronización" style="padding:6px 10px;">⚙ Sync</button>
+    <button class="btn btn-ia" onclick="copiarPromptActivo()">✦ Copiar prompt</button>
+    <button class="btn btn-primary" onclick="guardar()">Guardar</button>
+  </div>
+</header>
+<nav class="tabs">
+  <div class="tab active" onclick="showPanel('dashboard')">Dashboard</div>
+  <div class="tab" onclick="showPanel('checklist')">Checklist arranque</div>
+  <div class="tab" onclick="showPanel('artefactos')">Artefactos</div>
+  <div class="tab" onclick="showPanel('prompt')">Prompt maestro</div>
+  <div class="tab" onclick="showPanel('tareas')">Mis tareas</div>
+  <div class="tab" onclick="showPanel('guia')">Guía de uso</div>
+</nav>
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="panel active" id="panel-dashboard">
+  <div class="metrics-row">
+    <div class="metric"><div class="metric-val" id="m-completadas">0</div><div class="metric-lbl">tareas completadas</div></div>
+    <div class="metric"><div class="metric-val" id="m-pendientes">22</div><div class="metric-lbl">tareas pendientes</div></div>
+    <div class="metric"><div class="metric-val" id="m-pct">0%</div><div class="metric-lbl">sistema listo</div></div>
+    <div class="metric"><div class="metric-val" id="m-dias">Lun</div><div class="metric-lbl">listo para el</div></div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-header">
+      <span class="prog-title">Progreso general del sistema</span>
+      <span class="prog-pct" id="prog-pct-lbl" style="color:var(--green)">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill-main" style="background:var(--green);width:0%"></div></div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title" style="color:var(--blue)">Hoy · Lunes — solicitar IT EICE y cuentas Google</span><span class="prog-pct" id="pct-hoy" style="color:var(--blue)">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-hoy" style="background:var(--blue);width:0%"></div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title" style="color:var(--green)">Martes — crear los 4 proyectos en Claude.ai</span><span class="prog-pct" id="pct-mar" style="color:var(--green)">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-mar" style="background:var(--green);width:0%"></div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title" style="color:var(--amber)">Miércoles — conectores y memoria</span><span class="prog-pct" id="pct-mie" style="color:var(--amber)">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-mie" style="background:var(--amber);width:0%"></div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title" style="color:var(--coral)">Jueves — artefactos base y simulacro</span><span class="prog-pct" id="pct-jue" style="color:var(--coral)">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-jue" style="background:var(--coral);width:0%"></div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title" style="color:var(--purple)">Viernes — ensayo general</span><span class="prog-pct" id="pct-vie" style="color:var(--purple)">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-vie" style="background:var(--purple);width:0%"></div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span class="prog-title">Sábado — primer ciclo real del sistema</span><span class="prog-pct" id="pct-sab">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="fill-sab" style="background:var(--text);width:0%"></div></div>
+  </div>
+
+  <div class="section-label">Los 3 artefactos del sistema</div>
+  <div class="artefact-grid">
+    <div class="artefact-card">
+      <div class="artefact-icon">📋</div>
+      <div class="artefact-name">Bríefing diario</div>
+      <div class="artefact-desc">Arranque 7:30, agenda, decisiones, emprendimientos, junta y cierre 18:30. Con audio y notas por pestaña.</div>
+      <span class="artefact-status" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b);">✓ Creado</span>
+      <div><button class="btn" style="font-size:11px;padding:4px 10px;" onclick="sendPrompt('Quiero ajustar el bríefing diario persistente')">Ajustar ↗</button></div>
+    </div>
+    <div class="artefact-card">
+      <div class="artefact-icon">📊</div>
+      <div class="artefact-name">Estado semanal</div>
+      <div class="artefact-desc">Estado de los 3 emprendimientos con audio, notas, análisis IA y agenda del sábado estratégico.</div>
+      <span class="artefact-status" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b);">✓ Creado</span>
+      <div><button class="btn" style="font-size:11px;padding:4px 10px;" onclick="sendPrompt('Quiero ajustar el estado semanal de emprendimientos')">Ajustar ↗</button></div>
+    </div>
+    <div class="artefact-card">
+      <div class="artefact-icon">⌘</div>
+      <div class="artefact-name">Centro de comando</div>
+      <div class="artefact-desc">Checklist de arranque, prompt maestro, gestión de tareas propias y conexión de los 3 artefactos.</div>
+      <span class="artefact-status" style="background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);">← Estás aquí</span>
+      <div><button class="btn" style="font-size:11px;padding:4px 10px;" onclick="showPanel('prompt');document.querySelectorAll('.tab')[3].classList.add('active');document.querySelectorAll('.tab').forEach((t,i)=>{if(i!==3)t.classList.remove('active')})">Ver prompt ↗</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="panel" id="panel-checklist">
+  <div id="checklist-container"></div>
+</div>
+
+<!-- ARTEFACTOS -->
+<div class="panel" id="panel-artefactos">
+  <div class="section-label">Estado de los 3 artefactos</div>
+  <div class="artefact-grid" style="margin-bottom:20px;">
+    <div class="artefact-card" style="border:2px solid var(--green-b);">
+      <div class="artefact-icon">📋</div>
+      <div class="artefact-name">Bríefing diario persistente</div>
+      <div class="artefact-desc">6 pestañas: Arranque 7:30 · Agenda · Decisiones · Emprendimientos · Junta/Asesoría · Cierre 18:30. Audio y notas en cada pestaña. Prompts dinámicos por día.</div>
+      <span class="artefact-status" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b);">✓ Listo para usar</span>
+      <div style="margin-top:8px;font-size:11px;color:var(--text2);line-height:1.5;"><strong>Archivo:</strong> briefing_persistente_claude.html<br><strong>Cuándo abrir:</strong> 7:30am cada día · 18:30 para el cierre<br><strong>Guárdalo en:</strong> OneDrive (EICE)</div>
+    </div>
+    <div class="artefact-card" style="border:2px solid var(--amber-b);">
+      <div class="artefact-icon">📊</div>
+      <div class="artefact-name">Estado semanal de emprendimientos</div>
+      <div class="artefact-desc">6 pestañas: Resumen · Red EV · Consultoría IA · Frutas · Sábado estratégico · Historial. Audio→campos, notas acumulativas, análisis IA por proyecto.</div>
+      <span class="artefact-status" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b);">✓ Listo para usar</span>
+      <div style="margin-top:8px;font-size:11px;color:var(--text2);line-height:1.5;"><strong>Archivo:</strong> estado_semanal_emprendimientos.html<br><strong>Cuándo abrir:</strong> Viernes cierre · Sábado estratégico<br><strong>Guárdalo en:</strong> Google Drive (cuenta EV/Frutas)</div>
+    </div>
+    <div class="artefact-card" style="border:2px solid var(--blue-b);">
+      <div class="artefact-icon">⌘</div>
+      <div class="artefact-name">Centro de comando</div>
+      <div class="artefact-desc">Dashboard de progreso · Checklist de 22 tareas de arranque · Prompt maestro integrado · Gestión de tareas propias persistentes.</div>
+      <span class="artefact-status" style="background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);">← Estás aquí</span>
+      <div style="margin-top:8px;font-size:11px;color:var(--text2);line-height:1.5;"><strong>Archivo:</strong> centro_de_comando.html<br><strong>Cuándo abrir:</strong> Cada mañana con el bríefing · Sábado<br><strong>Guárdalo en:</strong> OneDrive o escritorio</div>
+    </div>
+  </div>
+
+  <div class="section-label">Cómo se conectan los 3 artefactos</div>
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;">
+    <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">1</div>
+      <div><div style="font-size:12px;font-weight:500;margin-bottom:2px;">7:30am — abres el bríefing diario</div><div style="font-size:11px;color:var(--text2);">El prompt de arranque lleva el contexto del día. Si tienes el estado semanal actualizado, el bríefing ya sabe qué emprendimiento toca hoy y qué instrucción necesita el equipo.</div></div>
+    </div>
+    <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--amber-bg);color:var(--amber);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">2</div>
+      <div><div style="font-size:12px;font-weight:500;margin-bottom:2px;">Bloque 16:00–18:30 — actualizas el estado semanal</div><div style="font-size:11px;color:var(--text2);">Después del bloque de emprendimientos, abres el estado semanal y pegas el audio o texto de lo que ocurrió. La IA actualiza los campos del proyecto del día.</div></div>
+    </div>
+    <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">3</div>
+      <div><div style="font-size:12px;font-weight:500;margin-bottom:2px;">18:30 — cierre en el bríefing</div><div style="font-size:11px;color:var(--text2);">El bríefing genera la síntesis del día y el bríefing de mañana. Las instrucciones para los equipos quedan listas para despachar.</div></div>
+    </div>
+    <div style="padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--coral-bg);color:var(--coral);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">4</div>
+      <div><div style="font-size:12px;font-weight:500;margin-bottom:2px;">Viernes cierre — preparas el sábado</div><div style="font-size:11px;color:var(--text2);">En el estado semanal generas la agenda del sábado estratégico. El bríefing del viernes lleva ese insumo para que el lunes siguiente arranques con todo claro.</div></div>
+    </div>
+    <div style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--gray-bg);color:var(--gray-t);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">5</div>
+      <div><div style="font-size:12px;font-weight:500;margin-bottom:2px;">Cuando hay algo nuevo — lo capturas aquí</div><div style="font-size:11px;color:var(--text2);">El centro de comando tiene su propia lista de tareas. Cualquier pendiente que no encaje en el bríefing ni en el estado semanal vive aquí y se guarda entre sesiones.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROMPT MAESTRO -->
+<div class="panel" id="panel-prompt">
+  <div class="prompt-master">
+    <div class="prompt-master-label">✦ Prompt maestro integrado — selecciona el bloque y copia</div>
+    <div class="prompt-master-tabs">
+      <button class="pm-tab active" onclick="mostrarPrompt('arranque',this)">Arranque 7:30</button>
+      <button class="pm-tab" onclick="mostrarPrompt('eice',this)">EICE reunión</button>
+      <button class="pm-tab" onclick="mostrarPrompt('junta',this)">Junta / Asesoría</button>
+      <button class="pm-tab" onclick="mostrarPrompt('emprendimientos',this)">Emprendimientos</button>
+      <button class="pm-tab" onclick="mostrarPrompt('cierre',this)">Cierre 18:30</button>
+      <button class="pm-tab" onclick="mostrarPrompt('sabado',this)">Sábado estratégico</button>
+    </div>
+    <div class="prompt-text" id="prompt-display" onclick="copiarPromptActivo()">Toca para copiar</div>
+    <div style="font-size:10px;color:var(--purple);margin-top:6px;opacity:.7;">Toca el texto para copiar al portapapeles · Pégalo en el Proyecto correspondiente de Claude</div>
+  </div>
+
+  <div class="section-label">Qué proyecto usar para cada prompt</div>
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface2);padding:8px 14px;border-bottom:0.5px solid var(--border);">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;">Prompt</div>
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;">Proyecto Claude</div>
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;">Conector activo</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:11px;"><span style="color:var(--text);">Arranque 7:30</span><span style="color:var(--text2);">Proyecto EICE</span><span style="color:var(--text2);">Microsoft 365</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:11px;"><span style="color:var(--text);">EICE reunión</span><span style="color:var(--text2);">Proyecto EICE</span><span style="color:var(--text2);">Microsoft 365</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:11px;"><span style="color:var(--text);">Junta / Asesoría</span><span style="color:var(--text2);">Proyecto Junta</span><span style="color:var(--text2);">Google cuenta #1</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:11px;"><span style="color:var(--text);">Emprendimientos</span><span style="color:var(--text2);">Proyecto EV+Frutas / Consultoría</span><span style="color:var(--text2);">Google cuenta #2 o #3</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;border-bottom:0.5px solid var(--border);font-size:11px;"><span style="color:var(--text);">Cierre 18:30</span><span style="color:var(--text2);">Proyecto EICE</span><span style="color:var(--text2);">Microsoft 365</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 14px;font-size:11px;"><span style="color:var(--text);">Sábado estratégico</span><span style="color:var(--text2);">Cualquier proyecto</span><span style="color:var(--text2);">Según emprendimiento</span></div>
+  </div>
+</div>
+
+<!-- TAREAS PROPIAS -->
+<div class="panel" id="panel-tareas">
+  <div class="section-label">Agregar tarea o pendiente propio</div>
+  <div class="custom-task-box">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input type="text" class="field" id="nueva-tarea-titulo" style="flex:1;height:36px;" placeholder="Nombre de la tarea o pendiente...">
+      <select class="field" id="nueva-tarea-tag" style="width:130px;height:36px;">
+        <option value="eice">EICE</option>
+        <option value="junta">Junta / Asesoría</option>
+        <option value="ev">Red EV</option>
+        <option value="cons">Consultoría IA</option>
+        <option value="frutas">Frutas</option>
+        <option value="sistema">Sistema IA</option>
+        <option value="personal">Personal</option>
+      </select>
+      <select class="field" id="nueva-tarea-prior" style="width:110px;height:36px;">
+        <option value="red">🔴 Urgente</option>
+        <option value="amber">🟡 Esta semana</option>
+        <option value="blue">🔵 Puede esperar</option>
+      </select>
+    </div>
+    <textarea class="field" id="nueva-tarea-desc" style="height:60px;resize:none;" placeholder="Descripción o contexto (opcional)..."></textarea>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="agregarTareaPropia()">+ Agregar tarea</button>
+  </div>
+  <div class="section-label">Tareas activas</div>
+  <div id="tareas-propias-lista"></div>
+</div>
+
+<!-- GUÍA DE USO -->
+<div class="panel" id="panel-guia">
+
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Cómo usar los 3 artefactos — guía completa paso a paso</div>
+    <div style="font-size:11px;color:var(--text2);line-height:1.6;">Esta guía describe exactamente qué hacer con cada artefacto en cada momento del día y de la semana. Está organizada por día para que puedas seguirla como un protocolo sin tener que improvisar.</div>
+  </div>
+
+  <div id="guia-tabs-nav" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+    <button class="btn" id="gtab-lv" onclick="mostrarGuia('lv')" style="background:var(--text);color:#fff;border-color:var(--text);">Lun – Vie</button>
+    <button class="btn" id="gtab-mar" onclick="mostrarGuia('mar')">Martes</button>
+    <button class="btn" id="gtab-jue" onclick="mostrarGuia('jue')">Jueves</button>
+    <button class="btn" id="gtab-vie" onclick="mostrarGuia('vie')">Viernes</button>
+    <button class="btn" id="gtab-sab" onclick="mostrarGuia('sab')">Sábado</button>
+  </div>
+
+  <div id="guia-content"></div>
+</div>
+
+</main>
+
+<script>
+// ============================================================
+// SINCRONIZACIÓN GOOGLE SHEETS
+// ============================================================
+const URL_SYNC_KEY = '_sistema_ia_script_url';
+const SCRIPT_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbxi-H3mbSszJsdpMXQKNEWZ8vi-0W_LdO7W6qonsgoiw04BPMw8p8eQw0_4qu6zCtlu/exec';
+
+function getScriptUrl(){
+  return localStorage.getItem(URL_SYNC_KEY) || SCRIPT_URL_DEFAULT;
+}
+
+async function syncSave(clave, valor){
+  const url = getScriptUrl();
+  if(!url) return false;
+  try{
+    const body = JSON.stringify({
+      artefacto: 'centro_comando',
+      clave: clave,
+      valor: typeof valor === 'string' ? valor : JSON.stringify(valor)
+    });
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: body
+    });
+    const data = await res.json();
+    return data.ok !== false;
+  } catch(e){
+    console.warn('syncSave error:', e);
+    return false;
+  }
+}
+
+async function syncLoad(clave){
+  const url = getScriptUrl();
+  if(!url) return null;
+  try{
+    const params = new URLSearchParams({artefacto: 'centro_comando', clave: clave});
+    const res = await fetch(`${url}?${params}`);
+    const data = await res.json();
+    if(data.ok !== false && data.data !== null && data.data !== undefined){
+      return data.data;
+    }
+  } catch(e){
+    console.warn('syncLoad error:', e);
+  }
+  return null;
+}
+
+function mostrarStatusSync(ok){
+  let el = document.getElementById('_sync_status_bar');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_sync_status_bar';
+    el.style.cssText = 'position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';
+    document.body.appendChild(el);
+  }
+  el.textContent = ok ? '✓ Sincronizado con Google Sheets' : '⚠ Guardado solo localmente';
+  el.style.background = ok ? '#EAF5EE' : '#FDF3E0';
+  el.style.color = ok ? '#1A7A3C' : '#9A6400';
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 2500);
+}
+
+function mostrarConfigSync(){
+  const ex = document.getElementById('_sync_overlay');
+  if(ex){ ex.remove(); return; }
+  const url = getScriptUrl();
+  const ov = document.createElement('div');
+  ov.id = '_sync_overlay';
+  ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">⚙ Configurar sincronización</div>
+      <div style="font-size:12px;color:#5C5A54;margin-bottom:14px;line-height:1.5;">Pega tu URL de Google Apps Script para sincronizar datos entre Mac, iPhone e iPad.</div>
+      <input id="_sync_url_inp" type="url" value="${url}"
+        placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%;padding:10px;border:1px solid #C8C3B8;border-radius:6px;font-size:11px;font-family:monospace;margin-bottom:10px;outline:none;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="_guardarSyncUrl()" style="background:#1A1915;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;">Guardar y verificar</button>
+        <button onclick="document.getElementById('_sync_overlay').remove()" style="background:#F0EEE9;border:1px solid #C8C3B8;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Cerrar</button>
+      </div>
+      <div id="_sync_result" style="margin-top:10px;font-size:11px;line-height:1.5;"></div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+async function _guardarSyncUrl(){
+  const url = document.getElementById('_sync_url_inp').value.trim();
+  const res = document.getElementById('_sync_result');
+  if(!url || !url.startsWith('https://')){
+    res.textContent = 'URL inválida.'; res.style.color = '#B02A2A'; return;
+  }
+  localStorage.setItem(URL_SYNC_KEY, url);
+  res.textContent = 'Verificando conexión...'; res.style.color = '#9A6400';
+  try{
+    const r = await fetch(`${url}?${new URLSearchParams({artefacto:'ping',clave:'test'})}`);
+    const d = await r.json();
+    if(d.ok !== false){
+      res.textContent = '✓ Conexión exitosa. Sincronización activa entre todos tus dispositivos.';
+      res.style.color = '#1A7A3C';
+      localStorage.setItem('_sistema_ia_last_sync', new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+      setTimeout(() => document.getElementById('_sync_overlay')?.remove(), 1800);
+    } else throw new Error('respuesta inválida');
+  } catch(e){
+    res.textContent = 'No se pudo conectar. Verifica que la URL sea correcta y que el acceso sea "Cualquier usuario" en Apps Script.';
+    res.style.color = '#B02A2A';
+  }
+}
+// ============================================================
+
+const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const KEY='centro_cmd_v1_';
+let tareasPropias=[];
+
+const CHECKLIST=[
+  { dia:'hoy', label:'Hoy · Lunes', badge:'30 min', badgeColor:'blue',
+    tareas:[
+      {id:'h1',txt:'Enviar solicitud IT de la EICE para habilitar conector Microsoft 365 en Claude',desc:'El administrador de Microsoft Entra debe aprobar la integración. Usa el mensaje generado en el chat.',tag:'it',req:true},
+      {id:'h2',txt:'Identificar qué cuenta Google está conectada en esta sesión de Claude',desc:'Revisa cuál de tus 3 cuentas Google es la activa y anótala.',tag:'config',req:false},
+      {id:'h3',txt:'Confirmar plan de Claude.ai activo (Pro recomendado — ~$20/mes)',desc:'Ve a claude.ai → Settings → Plan. Pro incluye proyectos ilimitados, conectores y búsqueda en historial.',tag:'config',req:false}
+    ]
+  },
+  { dia:'mar', label:'Martes', badge:'1 hora', badgeColor:'green',
+    tareas:[
+      {id:'m1',txt:'Crear Proyecto "EICE" en Claude.ai con instrucciones de contexto',desc:'claude.ai → Projects → New Project. Pegar las instrucciones del Proyecto EICE generadas en el chat.',tag:'claude',req:false},
+      {id:'m2',txt:'Crear Proyecto "Junta / Asesoría" con instrucciones de contexto',desc:'Mismo proceso. Contexto de la empresa de gestión de proyectos, tu rol como asesor y tipos de consulta.',tag:'claude',req:false},
+      {id:'m3',txt:'Crear Proyecto "Consultoría IA" con instrucciones de contexto',desc:'Equipo: ingeniero IA, abogada, comercial, experta en procesos. 3 clientes piloto activos.',tag:'claude',req:false},
+      {id:'m4',txt:'Crear Proyecto "Red EV + Frutas" con instrucciones de contexto',desc:'EV en operación con 2 socios. Frutas en desarrollo con equipo/socio.',tag:'claude',req:false}
+    ]
+  },
+  { dia:'mie', label:'Miércoles', badge:'1 hora', badgeColor:'amber',
+    tareas:[
+      {id:'x1',txt:'Activar memoria automática en Claude.ai',desc:'Settings → Memory → activar "Generate memories from conversations".',tag:'config',req:false},
+      {id:'x2',txt:'Conectar cuenta Google #1 (Junta/Asesoría) en Claude.ai y probar',desc:'Settings → Connectors → Google. Autenticar con cuenta #1 y verificar Gmail, Calendar y Drive.',tag:'config',req:false},
+      {id:'x3',txt:'Conectar cuenta Google #2 (Consultoría IA) y probar',desc:'Cambiar conector Google a cuenta #2. Entrar al Proyecto Consultoría IA y pedir resumen de correos.',tag:'config',req:false},
+      {id:'x4',txt:'Conectar cuenta Google #3 (Red EV + Frutas) y probar',desc:'Cambiar conector Google a cuenta #3. Pedir a Claude que revise calendario y correos de socios.',tag:'config',req:false},
+      {id:'x5',txt:'Verificar si IT habilitó el conector M365 y conectar cuenta EICE',desc:'Settings → Connectors → Microsoft 365. Autenticar con cuenta corporativa y probar con Outlook.',tag:'it',req:false}
+    ]
+  },
+  { dia:'jue', label:'Jueves', badge:'1 hora', badgeColor:'coral',
+    tareas:[
+      {id:'j1',txt:'Guardar el bríefing diario persistente en OneDrive de la EICE',desc:'Archivo: briefing_persistente_claude.html — descargado de este chat. Guardar en OneDrive/Sistema IA.',tag:'artefacto',req:false},
+      {id:'j2',txt:'Guardar el estado semanal de emprendimientos en Google Drive',desc:'Archivo: estado_semanal_emprendimientos.html — guardar en Google Drive (cuenta EV/Frutas).',tag:'artefacto',req:false},
+      {id:'j3',txt:'Guardar el centro de comando en OneDrive o escritorio',desc:'Archivo: centro_de_comando.html — guardar donde lo abras fácil cada mañana.',tag:'artefacto',req:false},
+      {id:'j4',txt:'Hacer simulacro completo del bloque de arranque de 7:30am',desc:'Abrir bríefing, pegar resumen del día, generar bríefing con IA, despachar instrucción de prueba a equipo.',tag:'prueba',req:false}
+    ]
+  },
+  { dia:'vie', label:'Viernes', badge:'1 hora', badgeColor:'purple',
+    tareas:[
+      {id:'v1',txt:'Probar el bloque de cierre completo de 18:30–19:30',desc:'Ejecutar el bloque de cierre: síntesis, pendientes para mañana, bríefing del día siguiente con IA.',tag:'prueba',req:false},
+      {id:'v2',txt:'Preparar la agenda del sábado estratégico con IA',desc:'En el estado semanal → pestaña Sábado → Generar agenda. Tener insumos de cada proyecto listos.',tag:'artefacto',req:false},
+      {id:'v3',txt:'Compartir el flujo del sistema con la asistente parcial de la EICE',desc:'Explicarle qué mensajes filtrar, qué puede responder sola, qué llega a ti y cuándo.',tag:'config',req:false}
+    ]
+  },
+  { dia:'sab', label:'Sábado', badge:'4 horas', badgeColor:'gray',
+    tareas:[
+      {id:'s1',txt:'Ejecutar el primer sábado estratégico completo con el sistema',desc:'8:00 revisión · 8:30 Red EV · 9:30 Consultoría IA · 10:30 Frutas · 11:30 cierre y despacho de instrucciones.',tag:'prueba',req:false},
+      {id:'s2',txt:'Anotar qué funcionó y qué ajustar del sistema — primera retrospectiva',desc:'Dictarle a Claude: "Lo que no funcionó bien esta semana en el sistema fue..." y pedirle sugerencias.',tag:'prueba',req:false}
+    ]
+  }
+];
+
+const TAG_COLORS={
+  it:{bg:'#FDECEA',c:'#B02A2A',b:'#F5C0BC',l:'Requiere IT'},
+  config:{bg:'#EBF2FB',c:'#1A5FAA',b:'#B8D0EE',l:'Configuración'},
+  claude:{bg:'#F0EDFB',c:'#5B3FBF',b:'#CBBFF5',l:'En Claude.ai'},
+  artefacto:{bg:'#EAF5EE',c:'#1A7A3C',b:'#B6E0C5',l:'Artefacto'},
+  prueba:{bg:'#FAECE7',c:'#993C1D',b:'#F5C4B3',l:'Prueba real'},
+  gray:{bg:'#F1EFE8',c:'#444441',b:'#D3D1C7',l:'General'}
+};
+const DAY_COLORS={hoy:'blue',mar:'green',mie:'amber',jue:'coral',vie:'purple',sab:'gray'};
+
+const PROMPTS={
+  arranque:`PROMPT MAESTRO — ARRANQUE 7:30am
+Proyecto: EICE · Conector: Microsoft 365
+
+Soy Gerente General de una EICE en Colombia. Hoy es [DÍA Y FECHA].
+
+CONTEXTO DE HOY (completar con lo que encontraste en correo y WhatsApp):
+- Mensajes urgentes: [RESUMEN]
+- Reuniones en agenda: [LISTA CON HORAS]
+- Emprendimiento del bloque de 16:00 hoy: [EV / CONSULTORÍA / FRUTAS]
+- Estado semanal de ese emprendimiento: [PEGAR DEL ARTEFACTO ESTADO SEMANAL]
+
+DAME:
+1) Mi prioridad #1 del día con justificación de 2 líneas
+2) Qué decisiones requieren mi criterio vs. qué puedo delegar hoy
+3) Instrucción concreta para el equipo del emprendimiento de hoy
+4) Instrucción para mi asistente EICE sobre correos y WhatsApp
+5) La pregunta clave que debo hacerle a la primera reunión del día`,
+
+  eice:`PROMPT MAESTRO — PREPARACIÓN REUNIÓN EICE
+Proyecto: EICE · Conector: Microsoft 365
+
+Tengo una reunión en los próximos 30 minutos en la EICE.
+
+CONTEXTO:
+- Tema: [TEMA DE LA REUNIÓN]
+- Participantes: [QUIÉNES]
+- Antecedentes: [QUÉ SE DECIDIÓ ANTES O QUÉ ESTÁ EN JUEGO]
+- Documento a revisar (si aplica): [PEGAR RESUMEN O NOMBRE DEL DOC EN ONEDRIVE]
+
+DAME:
+1) Los 3 puntos más críticos que debo tener claros antes de entrar (2 líneas c/u)
+2) Mi posición: qué voy a proponer o defender
+3) La pregunta más importante que debo hacerle al equipo
+4) El riesgo que nadie más va a mencionar pero que debo poner sobre la mesa
+5) El acuerdo mínimo que debe salir de esta reunión`,
+
+  junta:`PROMPT MAESTRO — JUNTA / ASESORÍA
+Proyecto: Junta · Conector: Google cuenta #1 (Gmail + Drive)
+
+Soy asesor de junta directiva de una empresa de gestión de proyectos públicos, privados e inmobiliarios que fundé hace 6 años. Tengo reunión hoy al mediodía (martes o jueves).
+
+ESTADO ACTUAL DE LA EMPRESA:
+- Proyectos públicos/público-privados: [PEGAR DEL BRÍEFING PESTAÑA JUNTA]
+- Proyectos inmobiliarios: [PEGAR DEL BRÍEFING PESTAÑA JUNTA]
+- Estado financiero: [PEGAR DEL BRÍEFING PESTAÑA JUNTA]
+- Alertas activas: [PEGAR DEL BRÍEFING PESTAÑA JUNTA]
+- Decisión estratégica pendiente: [PEGAR DEL BRÍEFING PESTAÑA JUNTA]
+
+DAME:
+1) Los 3 temas más críticos a abordar hoy como asesor
+2) Mi recomendación estratégica sobre la decisión más importante
+3) Las preguntas que debo hacerle a la gerencia
+4) El tema incómodo que debo poner sobre la mesa aunque nadie lo haya traído
+5) El acuerdo mínimo que debe salir de esta reunión`,
+
+  emprendimientos:`PROMPT MAESTRO — BLOQUE EMPRENDIMIENTOS 16:00–18:30
+Proyecto: [EV+Frutas o Consultoría IA] · Conector: Google cuenta #2 o #3
+
+Tengo el bloque de emprendimientos. Hoy toca: [RED EV / CONSULTORÍA IA / FRUTAS]
+
+ESTADO ACTUAL DEL PROYECTO (del artefacto Estado Semanal):
+- Avance: [%]
+- Última semana: [PEGAR CAMPO ESTADO]
+- Próximo hito: [PEGAR CAMPO HITO]
+- Alerta activa: [PEGAR CAMPO ALERTA]
+- Lo que necesito resolver hoy: [PEGAR CAMPO INSTRUCCIÓN]
+
+INSUMOS DE HOY (novedades que llegaron durante el día):
+[PEGAR NOTAS DEL BRÍEFING PESTAÑA EMPRENDIMIENTOS]
+
+DAME:
+1) La decisión más importante que debo tomar en este bloque
+2) Qué debo exigirle al equipo/socios que resuelvan esta semana sin mí
+3) Instrucción exacta para el equipo lista para enviar hoy
+4) Variable clave que debo monitorear esta semana para saber si vamos bien`,
+
+  cierre:`PROMPT MAESTRO — CIERRE 18:30–19:30
+Proyecto: EICE · Conector: Microsoft 365
+
+Cierre del día [DÍA Y FECHA].
+
+SÍNTESIS DEL DÍA (pegar del bríefing pestaña Cierre):
+- Decisiones tomadas: [CAMPO]
+- Compromisos adquiridos: [CAMPO]
+- Señal importante: [CAMPO]
+- Pendientes para mañana: [CAMPO]
+
+NOVEDADES DE EMPRENDIMIENTOS HOY:
+- [PEGAR NOTAS DEL BLOQUE DE 16:00]
+
+DAME:
+1) Acta ejecutiva del día en máximo 6 líneas
+2) Instrucciones para los equipos de emprendimientos para mañana (una por proyecto)
+3) Instrucción para mi asistente EICE para mañana temprano
+4) Bríefing del día siguiente: prioridad #1, reuniones a preparar, decisiones pendientes
+5) ¿Hay alguna señal de hoy que deba incorporar en el sábado estratégico?`,
+
+  sabado:`PROMPT MAESTRO — SÁBADO ESTRATÉGICO 8:00–12:00
+Proyecto: [El que corresponda al emprendimiento del bloque]
+
+Es sábado. Tengo 4 horas para pensar sin interrupciones.
+
+ESTADO DE LA SEMANA (pegar del artefacto Estado Semanal → Resumen):
+- Red EV: [AVANCE]% · [HITO] · [ALERTA]
+- Consultoría IA: [AVANCE]% · [CLIENTE PRIORITARIO] · [ALERTA]
+- Frutas: [AVANCE]% · [HITO] · [ALERTA]
+
+DECISIÓN GLOBAL PENDIENTE: [PEGAR DEL ESTADO SEMANAL]
+CUELLO DE BOTELLA: [PEGAR DEL ESTADO SEMANAL]
+SEÑAL DE LA SEMANA: [PEGAR DEL ESTADO SEMANAL]
+
+PARA EL BLOQUE DE [EV / CONSULTORÍA / FRUTAS] (9:30–10:30):
+DAME:
+1) Diagnóstico honesto del estado del proyecto
+2) La decisión más importante que debo tomar hoy con sus opciones
+3) Escenarios posibles con riesgos si no decido
+4) Instrucción semanal exacta para el equipo/socios lista para enviar
+5) Un indicador concreto que me dirá la próxima semana si vamos bien`
+};
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+async function init(){
+  const hoy=new Date(), d=hoy.getDay(), n=hoy.getDate(), m=hoy.getMonth(), y=hoy.getFullYear();
+  document.getElementById('date-chip').textContent=DIAS[d]+' '+n+'/'+(m+1)+'/'+y;
+  document.getElementById('topbar-sub').textContent='Sistema IA · Semana de arranque · '+DIAS[d];
+  renderChecklist();
+  mostrarPrompt('arranque',document.querySelector('.pm-tab'));
+  await cargar();
+  updateDashboard();
+  initGuia();
+  setInterval(guardar,30000);
+}
+
+function renderChecklist(){
+  const cont=document.getElementById('checklist-container');
+  cont.innerHTML='';
+  CHECKLIST.forEach(bloque=>{
+    const dc=DAY_COLORS[bloque.dia]||'gray';
+    const tc=TAG_COLORS[dc]||TAG_COLORS.gray;
+    const html=`
+    <div class="task-card">
+      <div class="task-day">
+        <span>${bloque.label}</span>
+        <span class="task-day-badge" style="background:${tc.bg};color:${tc.c};border-color:${tc.b};">${bloque.badge}</span>
+      </div>
+      ${bloque.tareas.map(t=>{
+        const tg=TAG_COLORS[t.tag]||TAG_COLORS.gray;
+        return `<div class="task-item ${estadoTarea(t.id)?'done-item':''}" id="item-${t.id}">
+          <div class="chk ${estadoTarea(t.id)?'done':''}" onclick="toggleTarea('${t.id}')"></div>
+          <div class="task-body">
+            <div class="task-title">${t.txt}</div>
+            ${t.desc?`<div class="task-desc">${t.desc}</div>`:''}
+            <span class="task-tag" style="background:${tg.bg};color:${tg.c};border-color:${tg.b};">${tg.l}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    cont.insertAdjacentHTML('beforeend',html);
+  });
+}
+
+let estadosTareas={};
+function estadoTarea(id){ return estadosTareas[id]===true; }
+function toggleTarea(id){
+  estadosTareas[id]=!estadosTareas[id];
+  const item=document.getElementById('item-'+id);
+  const chk=item?.querySelector('.chk');
+  if(item){ item.classList.toggle('done-item',estadosTareas[id]); }
+  if(chk){ chk.classList.toggle('done',estadosTareas[id]); }
+  updateDashboard();
+  guardar();
+}
+
+function updateDashboard(){
+  const todas=CHECKLIST.flatMap(b=>b.tareas);
+  const total=todas.length;
+  const done=todas.filter(t=>estadoTarea(t.id)).length;
+  const pct=Math.round(done/total*100);
+  document.getElementById('m-completadas').textContent=done;
+  document.getElementById('m-pendientes').textContent=total-done;
+  document.getElementById('m-pct').textContent=pct+'%';
+  document.getElementById('prog-fill-main').style.width=pct+'%';
+  document.getElementById('prog-pct-lbl').textContent=pct+'%';
+  const dias=['hoy','mar','mie','jue','vie','sab'];
+  dias.forEach(dia=>{
+    const bloque=CHECKLIST.find(b=>b.dia===dia);
+    if(!bloque) return;
+    const t=bloque.tareas.length, d=bloque.tareas.filter(x=>estadoTarea(x.id)).length;
+    const p=Math.round(d/t*100);
+    const fillEl=document.getElementById('fill-'+dia);
+    const pctEl=document.getElementById('pct-'+dia);
+    if(fillEl) fillEl.style.width=p+'%';
+    if(pctEl) pctEl.textContent=p+'%';
+  });
+  const listo=pct>=100?'Lunes ✓':pct>=80?'Sábado':pct>=60?'Viernes':pct>=40?'Jueves':'Lunes';
+  document.getElementById('m-dias').textContent=listo;
+}
+
+function mostrarPrompt(key, btnEl){
+  document.querySelectorAll('.pm-tab').forEach(b=>b.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+  document.getElementById('prompt-display').textContent=PROMPTS[key]||'Prompt no encontrado.';
+  window._promptActivo=PROMPTS[key]||'';
+}
+window._promptActivo=PROMPTS['arranque'];
+
+function copiarPromptActivo(){
+  const texto=window._promptActivo||document.getElementById('prompt-display').textContent;
+  navigator.clipboard.writeText(texto).then(()=>{
+    const el=document.getElementById('prompt-display');
+    const orig=el.style.background;
+    el.style.background='rgba(255,255,255,.95)';
+    setTimeout(()=>el.style.background=orig,600);
+    document.getElementById('topbar-sub').textContent='✓ Prompt copiado — pégalo en el Proyecto de Claude';
+    setTimeout(()=>document.getElementById('topbar-sub').textContent='Sistema IA · Semana de arranque',2500);
+  });
+}
+
+const PRIOR_COLORS={red:{bg:'#FDECEA',c:'#B02A2A',b:'#F5C0BC',l:'Urgente'},amber:{bg:'#FDF3E0',c:'#9A6400',b:'#F0D598',l:'Esta semana'},blue:{bg:'#EBF2FB',c:'#1A5FAA',b:'#B8D0EE',l:'Puede esperar'}};
+const TAG_PROJ={eice:{bg:'#EBF2FB',c:'#1A5FAA',b:'#B8D0EE'},junta:{bg:'#FAECE7',c:'#993C1D',b:'#F5C4B3'},ev:{bg:'#FDF3E0',c:'#9A6400',b:'#F0D598'},cons:{bg:'#EAF5EE',c:'#1A7A3C',b:'#B6E0C5'},frutas:{bg:'#F0EDFB',c:'#5B3FBF',b:'#CBBFF5'},sistema:{bg:'#F1EFE8',c:'#444441',b:'#D3D1C7'},personal:{bg:'#F7F6F3',c:'#5C5A54',b:'#C8C3B8'}};
+
+function agregarTareaPropia(){
+  const titulo=document.getElementById('nueva-tarea-titulo').value.trim();
+  if(!titulo) return;
+  const desc=document.getElementById('nueva-tarea-desc').value.trim();
+  const tag=document.getElementById('nueva-tarea-tag').value;
+  const prior=document.getElementById('nueva-tarea-prior').value;
+  const ahora=new Date();
+  tareasPropias.push({id:Date.now(),titulo,desc,tag,prior,done:false,ts:ahora.toISOString(),dia:DIAS[ahora.getDay()],hora:ahora.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})});
+  document.getElementById('nueva-tarea-titulo').value='';
+  document.getElementById('nueva-tarea-desc').value='';
+  renderTareasPropias();
+  guardar();
+}
+function toggleTareaPropia(id){
+  const t=tareasPropias.find(x=>x.id===id);
+  if(t){ t.done=!t.done; renderTareasPropias(); guardar(); }
+}
+function eliminarTareaPropia(id){
+  tareasPropias=tareasPropias.filter(x=>x.id!==id);
+  renderTareasPropias(); guardar();
+}
+function renderTareasPropias(){
+  const lista=document.getElementById('tareas-propias-lista');
+  if(!tareasPropias.length){lista.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--text3);">Sin tareas propias aún. Agrega la primera arriba.</div>';return;}
+  const activas=tareasPropias.filter(t=>!t.done);
+  const completadas=tareasPropias.filter(t=>t.done);
+  const renderItem=t=>{
+    const pc=PRIOR_COLORS[t.prior]||PRIOR_COLORS.blue;
+    const tc=TAG_PROJ[t.tag]||TAG_PROJ.personal;
+    return `<div class="task-item ${t.done?'done-item':''}" style="border-bottom:0.5px solid var(--border);">
+      <div class="chk ${t.done?'done':''}" onclick="toggleTareaPropia(${t.id})"></div>
+      <div class="task-body">
+        <div class="task-title">${t.titulo}</div>
+        ${t.desc?`<div class="task-desc">${t.desc}</div>`:''}
+        <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;">
+          <span class="task-tag" style="background:${pc.bg};color:${pc.c};border-color:${pc.b};">${pc.l}</span>
+          <span class="task-tag" style="background:${tc.bg};color:${tc.c};border-color:${tc.b};">${t.tag}</span>
+          <span style="font-size:10px;color:var(--text3);padding-top:3px;">${t.dia} ${t.hora}</span>
+        </div>
+      </div>
+      <span style="cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;flex-shrink:0;" onclick="eliminarTareaPropia(${t.id})">×</span>
+    </div>`;
+  };
+  lista.innerHTML='';
+  if(activas.length){
+    lista.insertAdjacentHTML('beforeend','<div class="task-card">'+activas.map(renderItem).join('')+'</div>');
+  }
+  if(completadas.length){
+    lista.insertAdjacentHTML('beforeend','<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 6px;">Completadas ('+completadas.length+')</div><div class="task-card">'+completadas.map(renderItem).join('')+'</div>');
+  }
+}
+
+async function guardar(){
+  const data={estados:JSON.stringify(estadosTareas),tareas:JSON.stringify(tareasPropias)};
+  try{window.storage.set(KEY+'data',JSON.stringify(data));}catch(e){}
+  localStorage.setItem(KEY+'data',JSON.stringify(data));
+  const ok = await syncSave(KEY+'data', data).then(()=>true).catch(()=>false);
+  mostrarStatusSync(ok);
+}
+async function cargar(){
+  let data=null;
+  const remoto = await syncLoad(KEY+'data');
+  if(remoto) data = typeof remoto==='string'?JSON.parse(remoto):remoto;
+  if(!data){ try{const r=window.storage.get(KEY+'data');if(r&&r.value)data=JSON.parse(r.value);}catch(e){} }
+  if(!data){const r=localStorage.getItem(KEY+'data');if(r)data=JSON.parse(r);}
+  if(!data)return;
+  try{estadosTareas=JSON.parse(data.estados||'{}');}catch(e){estadosTareas={};}
+  try{tareasPropias=JSON.parse(data.tareas||'[]');}catch(e){tareasPropias=[];}
+  renderChecklist();
+  renderTareasPropias();
+  initGuia();
+}
+
+function mostrarGuia(dia){
+  document.querySelectorAll('#guia-tabs-nav .btn').forEach(b=>{b.style.background='';b.style.color='';b.style.borderColor='';});
+  const activo=document.getElementById('gtab-'+dia);
+  if(activo){activo.style.background='var(--text)';activo.style.color='#fff';activo.style.borderColor='var(--text)';}
+  const AB='background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);';
+  const AE='background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b);';
+  const AC='background:var(--gray-bg);color:var(--gray-t);border-color:var(--gray-b);';
+  const AP='background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b);';
+  const sn=(c,bg)=>`<div class="step-num" style="background:${bg};color:#fff;">${c}</div>`;
+
+  const contenido={
+lv:`<div class="dia-intro"><div class="dia-intro-title">Lunes a viernes — rutina diaria estándar</div><div class="dia-intro-desc">Este cronograma se repite cada día de lunes a viernes. Los martes y jueves tiene variación al mediodía (reunión Junta). El emprendimiento del bloque de las 16:00 cambia según el día: Lunes/Miércoles → Red EV · Martes/Jueves → Consultoría IA · Viernes → Frutas.</div></div>
+<div class="dia-resumen"><div class="dia-res-card"><div class="dia-res-num">3</div><div class="dia-res-lbl">artefactos activos</div></div><div class="dia-res-card"><div class="dia-res-num">4</div><div class="dia-res-lbl">bloques del día</div></div><div class="dia-res-card"><div class="dia-res-num">~45 min</div><div class="dia-res-lbl">tiempo con artefactos</div></div></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">7:30 – 8:30</span><span class="crono-titulo">Arranque del día</span><span class="crono-art" style="${AB}">📋 Bríefing + ⌘ Centro</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Abre el Centro de comando</div><div class="step-desc">Revisa el Dashboard: progreso del sistema y tareas propias activas. 2 minutos máximo.</div><div class="step-art-ref">⌘ Centro → Dashboard</div></div></li>
+<li class="crono-step">${sn(2,'#1A5FAA')}<div class="step-body"><div class="step-title">Abre el Bríefing diario</div><div class="step-desc">Si es el mismo día de ayer, carga lo guardado. Si es nuevo día, está vacío y listo. Pestaña Arranque 7:30.</div><div class="step-art-ref">📋 Bríefing → Arranque 7:30</div></div></li>
+<li class="crono-step">${sn(3,'#9A6400')}<div class="step-body"><div class="step-title">Escanea correo y WhatsApp sin responder</div><div class="step-desc">Solo lees. Identifica qué es urgente, qué es decisión tuya y qué puede filtrar tu asistente.</div><div class="step-tip">Regla de oro: mirar sin reaccionar. Cerebro en modo lectura, no en modo respuesta.</div></div></li>
+<li class="crono-step">${sn(4,'#5B3FBF')}<div class="step-body"><div class="step-title">Pega el resumen en el Bríefing y genera con IA</div><div class="step-desc">En la caja azul de audio del Arranque, escribe o pega lo que encontraste. Haz clic en "✦ Actualizar campos con IA". La IA clasifica en: prioridad, decisiones y delegables.</div><div class="step-art-ref">📋 Bríefing → Arranque → caja audio → botón IA</div></div></li>
+<li class="crono-step">${sn(5,'#5B3FBF')}<div class="step-body"><div class="step-title">Copia el prompt de arranque y pégalo en Claude (Proyecto EICE)</div><div class="step-desc">Centro de comando → Prompt maestro → Arranque. Completa los corchetes y pégalo en el Proyecto EICE con conector Microsoft 365 activo.</div><div class="step-art-ref">⌘ Centro → Prompt maestro → Arranque 7:30</div></div></li>
+<li class="crono-step">${sn(6,'#B02A2A')}<div class="step-body"><div class="step-title">Despacha instrucciones a equipos de emprendimientos</div><div class="step-desc">Con las instrucciones que generó Claude, envía a cada equipo lo que deben saber y hacer hoy. Máximo 3 mensajes. Silencia notificaciones no críticas hasta las 16:00.</div><div class="step-tip">Si haces esto antes de las 8:30am, tus equipos tienen 7+ horas de trabajo útil antes de verte en el bloque de las 16:00.</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">8:30 – 12:00</span><span class="crono-titulo">EICE — mañana</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Antes de cada reunión: prepara con IA</div><div class="step-desc">Bríefing → Agenda → campo "Preparar reunión". Pega el contexto y haz clic en "Preparar reunión". Recibes los 3 puntos clave, la pregunta para el equipo y el resultado ideal.</div><div class="step-art-ref">📋 Bríefing → Agenda → Preparar reunión con IA</div></div></li>
+<li class="crono-step">${sn(2,'#1A5FAA')}<div class="step-body"><div class="step-title">Captura notas durante las reuniones</div><div class="step-desc">Cualquier decisión, compromiso o dato: agrégalo en la pestaña correspondiente del bríefing. Un texto corto, Enter, queda guardado con hora y día.</div><div class="step-art-ref">📋 Bríefing → pestaña del tema → campo notas</div></div></li>
+<li class="crono-step">${sn(3,'#993C1D')}<div class="step-body"><div class="step-title">Si recibes un acta: extrae decisiones con IA</div><div class="step-desc">Bríefing → Decisiones → caja azul. Pega el texto del acta → "Extraer decisiones con IA". Claude separa pendientes de tu criterio vs delegables.</div><div class="step-art-ref">📋 Bríefing → Decisiones → Extraer de acta</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">12:00 – 14:00</span><span class="crono-titulo">Almuerzo · Junta solo mar y jue</span><span class="crono-art" style="${AB}">📋 Bríefing — Junta</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#993C1D')}<div class="step-body"><div class="step-title">Si es martes o jueves: usa la pestaña Junta / Asesoría</div><div class="step-desc">Antes del mediodía prepara la reunión con IA. Durante la reunión captura notas. Al terminar, actualiza los campos con audio.</div><div class="step-art-ref">📋 Bríefing → Junta / Asesoría</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">14:00 – 16:00</span><span class="crono-titulo">EICE — tarde</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Continúa capturando en el Bríefing</div><div class="step-desc">Todo lo que vayas decidiendo o que llegue en la tarde: anótalo. Correos respondidos, pendientes delegados, compromisos adquiridos.</div><div class="step-art-ref">📋 Bríefing → pestaña que corresponda → notas</div></div></li>
+<li class="crono-step">${sn(2,'#9A6400')}<div class="step-body"><div class="step-title">5 minutos antes de las 16:00: revisa el Estado semanal</div><div class="step-desc">Abre el Estado semanal → pestaña del emprendimiento de hoy. Revisa el estado actual, instrucción de la semana y alertas. Llegas al bloque con contexto.</div><div class="step-art-ref">📊 Estado semanal → pestaña del emprendimiento del día</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">16:00 – 18:30</span><span class="crono-titulo">Bloque de emprendimientos</span><span class="crono-art" style="${AE}">📊 Estado semanal + 📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#9A6400')}<div class="step-body"><div class="step-title">Trabaja con el equipo/socios con el Estado semanal visible</div><div class="step-desc">Ten la pestaña del emprendimiento del día abierta mientras sesionas. Anota en tiempo real cualquier novedad en el campo de notas.</div><div class="step-art-ref">📊 Estado semanal → pestaña del día</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Al terminar el bloque: pega el audio → Actualizar campos con IA</div><div class="step-desc">Graba o escribe un resumen de lo que pasó. Pégalo en la caja azul del Estado semanal → "✦ Actualizar campos con IA". Los campos del proyecto se actualizan automáticamente.</div><div class="step-art-ref">📊 Estado semanal → caja audio → Actualizar con IA</div></div></li>
+<li class="crono-step">${sn(3,'#1A5FAA')}<div class="step-body"><div class="step-title">Registra también en el Bríefing pestaña Emprendimientos</div><div class="step-desc">Las instrucciones despachadas al equipo y el estado actualizado van en la pestaña Emprendimientos del bríefing para alimentar el cierre del día.</div><div class="step-art-ref">📋 Bríefing → Emprendimientos → actualizar + nota</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">18:30 – 19:30</span><span class="crono-titulo">Cierre del día</span><span class="crono-art" style="${AB}">📋 Bríefing + ⌘ Centro</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Completa la pestaña Cierre 18:30 del Bríefing</div><div class="step-desc">Decisiones tomadas, compromisos adquiridos, señal del día y pendientes para mañana. O graba un audio de 2 min con todo eso y pégalo en la caja azul.</div><div class="step-art-ref">📋 Bríefing → Cierre 18:30</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Genera síntesis y bríefing de mañana con IA</div><div class="step-desc">"✦ Generar síntesis y bríefing de mañana". Claude produce el acta del día, instrucciones para los equipos y el bríefing del día siguiente listo para las 7:30am.</div><div class="step-art-ref">📋 Bríefing → Cierre → botón Generar IA</div></div></li>
+<li class="crono-step">${sn(3,'#1A7A3C')}<div class="step-body"><div class="step-title">Despacha instrucciones nocturnas a los equipos</div><div class="step-desc">Copia las instrucciones que generó Claude y envíalas por WhatsApp o correo. Los equipos arrancan el día siguiente con claridad sin consultarte.</div></div></li>
+<li class="crono-step">${sn(4,'#444441')}<div class="step-body"><div class="step-title">Actualiza tareas propias en el Centro de comando si surgió algo nuevo</div><div class="step-desc">Si surgió algo que no encaja en el bríefing ni en el estado semanal: agrégalo en el Centro → Mis tareas.</div><div class="step-art-ref">⌘ Centro → Mis tareas → Agregar tarea</div></div></li>
+<li class="crono-step">${sn(5,'#B02A2A')}<div class="step-body"><div class="step-title">Guarda el Bríefing y desconéctate a las 19:30</div><div class="step-desc">Haz clic en "Guardar". A partir de las 19:30 no más mensajes de trabajo. Si llega algo urgente en la noche, graba una nota de voz para procesarla mañana a las 7:30.</div><div class="step-tip">La desconexión a las 19:30 no es opcional. Con 12 horas de jornada, el cerebro necesita corte real para rendir mañana.</div></div></li>
+</ul></div>`,
+
+mar:`<div class="dia-intro"><div class="dia-intro-title">Martes — variación: Junta al mediodía + Consultoría IA a las 16:00</div><div class="dia-intro-desc">El martes tiene la rutina base más dos bloques específicos: la reunión de Junta al mediodía y el bloque de Consultoría IA en la tarde. Es el día de mayor cambio de contexto.</div></div>
+<div class="dia-resumen"><div class="dia-res-card"><div class="dia-res-num">2</div><div class="dia-res-lbl">reuniones fijas</div></div><div class="dia-res-card"><div class="dia-res-num">Junta</div><div class="dia-res-lbl">12:00 mediodía</div></div><div class="dia-res-card"><div class="dia-res-num">Consultoría IA</div><div class="dia-res-lbl">16:00 – 18:30</div></div></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">7:30 – 8:30</span><span class="crono-titulo">Arranque + preparación Junta</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Ejecuta la rutina base de arranque</div><div class="step-desc">Igual que todos los días: escanea, pega en el bríefing, genera con IA, despacha instrucciones a equipos. Hoy el emprendimiento del bloque de las 16:00 es Consultoría IA.</div><div class="step-art-ref">📋 Bríefing → Arranque 7:30</div></div></li>
+<li class="crono-step">${sn(2,'#993C1D')}<div class="step-body"><div class="step-title">Prepara también la reunión de Junta con IA</div><div class="step-desc">Antes de las 8:30, abre Bríefing → Junta / Asesoría → "Preparar bríefing de reunión con IA". Tienes 3 horas antes de la reunión del mediodía.</div><div class="step-art-ref">📋 Bríefing → Junta / Asesoría → Preparar reunión</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">11:45 – 14:00</span><span class="crono-titulo">Pre-reunión y Reunión de Junta</span><span class="crono-art" style="${AB}">📋 Bríefing — Junta</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#993C1D')}<div class="step-body"><div class="step-title">11:45 — repasa el bríefing de la reunión</div><div class="step-desc">Bríefing → Junta → revisa el output del botón "Preparar bríefing". Recuerda los 3 temas críticos, tu posición y la pregunta. Entra con claridad.</div><div class="step-art-ref">📋 Bríefing → Junta → sección preparación</div></div></li>
+<li class="crono-step">${sn(2,'#993C1D')}<div class="step-body"><div class="step-title">Durante la reunión: captura notas en tiempo real</div><div class="step-desc">Con el celular, agrega notas en la pestaña Junta a medida que avanza. No esperes al final — los detalles se pierden.</div><div class="step-art-ref">📋 Bríefing → Junta → campo notas → Enter</div></div></li>
+<li class="crono-step">${sn(3,'#993C1D')}<div class="step-body"><div class="step-title">Al terminar: actualiza la pestaña Junta con audio</div><div class="step-desc">Graba 2 minutos con lo que pasó. Pégalo en la caja azul → "✦ Actualizar campos con IA". Proyectos, decisiones y alertas actualizados.</div><div class="step-art-ref">📋 Bríefing → Junta → caja audio → Actualizar IA</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">16:00 – 18:30</span><span class="crono-titulo">Bloque Consultoría IA</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A7A3C')}<div class="step-body"><div class="step-title">Abre Estado semanal → Consultoría IA</div><div class="step-desc">Revisa el estado de los 3 clientes piloto, las instrucciones del equipo y las alertas activas. Ejecuta el bloque con ese contexto.</div><div class="step-art-ref">📊 Estado semanal → Consultoría IA</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Al terminar: audio o texto → actualizar Estado semanal</div><div class="step-desc">Pega el resumen del bloque en la caja azul → "✦ Actualizar campos con IA". Clientes, aprendizajes y alertas actualizados automáticamente.</div><div class="step-art-ref">📊 Estado semanal → Consultoría IA → caja audio</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">18:30 – 19:30</span><span class="crono-titulo">Cierre del día — rutina base</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Ejecuta el cierre estándar</div><div class="step-desc">Completa la pestaña Cierre, genera síntesis con IA, despacha instrucciones nocturnas. Desconexión a las 19:30.</div><div class="step-art-ref">📋 Bríefing → Cierre 18:30</div></div></li>
+</ul></div>`,
+
+jue:`<div class="dia-intro"><div class="dia-intro-title">Jueves — variación: Junta al mediodía + Consultoría IA + preparar insumos del sábado</div><div class="dia-intro-desc">Jueves tiene la misma estructura que el martes, pero hay un paso adicional crítico: al final del día el Estado semanal debe estar completo para que el viernes puedas generar la agenda del sábado estratégico.</div></div>
+<div class="dia-resumen"><div class="dia-res-card"><div class="dia-res-num">2</div><div class="dia-res-lbl">reuniones fijas</div></div><div class="dia-res-card"><div class="dia-res-num">Junta</div><div class="dia-res-lbl">12:00 mediodía</div></div><div class="dia-res-card"><div class="dia-res-num">Preparar</div><div class="dia-res-lbl">insumos del sábado</div></div></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">7:30 – 8:30</span><span class="crono-titulo">Arranque + preparación Junta + revisión Estado semanal</span><span class="crono-art" style="${AB}">📋 Bríefing + 📊 Estado</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Rutina base + preparación de Junta (igual al martes)</div><div class="step-desc">Escanea, genera bríefing, despacha instrucciones a Consultoría IA y prepara la reunión de Junta del mediodía.</div><div class="step-art-ref">📋 Bríefing → Arranque + Junta</div></div></li>
+<li class="crono-step">${sn(2,'#9A6400')}<div class="step-body"><div class="step-title">Revisa el Estado semanal — anota qué falta actualizar</div><div class="step-desc">Abre Estado semanal → Resumen. Identifica qué proyectos tienen campos vacíos. Hoy al final del día deben estar los 3 proyectos actualizados para que el viernes la agenda del sábado sea útil.</div><div class="step-art-ref">📊 Estado semanal → Resumen → detectar campos vacíos</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">12:00 – 14:00</span><span class="crono-titulo">Reunión de Junta — igual al martes</span><span class="crono-art" style="${AB}">📋 Bríefing — Junta</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#993C1D')}<div class="step-body"><div class="step-title">Prepara, asiste y actualiza — igual al martes</div><div class="step-desc">11:45 repasa el bríefing. Durante la reunión captura notas. Al terminar actualiza con audio la pestaña Junta.</div><div class="step-art-ref">📋 Bríefing → Junta / Asesoría</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">16:00 – 18:30</span><span class="crono-titulo">Consultoría IA + cierre del Estado semanal</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A7A3C')}<div class="step-body"><div class="step-title">Bloque Consultoría IA y actualización del Estado</div><div class="step-desc">Igual que el martes: trabaja con el equipo, captura notas, actualiza los campos con audio al terminar.</div><div class="step-art-ref">📊 Estado semanal → Consultoría IA</div></div></li>
+<li class="crono-step">${sn(2,'#9A6400')}<div class="step-body"><div class="step-title">Completa Red EV y Frutas si tienen campos vacíos</div><div class="step-desc">Dedica 10 minutos a actualizar los campos de Red EV y Frutas con lo que sabes. El viernes necesitas el Estado semanal completo para generar la agenda del sábado.</div><div class="step-art-ref">📊 Estado semanal → Red EV y Frutas → actualizar</div></div></li>
+<li class="crono-step">${sn(3,'#5B3FBF')}<div class="step-body"><div class="step-title">Genera el análisis integrado de los 3 emprendimientos</div><div class="step-desc">Estado semanal → Resumen → "✦ Análisis con IA". Guarda ese análisis — lo usarás el viernes para preparar el sábado.</div><div class="step-art-ref">📊 Estado semanal → Resumen → Análisis IA</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">18:30 – 19:30</span><span class="crono-titulo">Cierre — rutina base</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Cierre estándar</div><div class="step-desc">Pestaña Cierre, genera síntesis con IA, despacha instrucciones nocturnas. Desconexión a las 19:30.</div></div></li>
+</ul></div>`,
+
+vie:`<div class="dia-intro"><div class="dia-intro-title">Viernes — variación: Frutas temporada a las 16:00 + preparación del sábado</div><div class="dia-intro-desc">El viernes es el día de cierre de semana. Además del bloque de Frutas, tienes que generar la agenda del sábado estratégico y despachar las instrucciones semanales a los 3 equipos antes del mediodía del sábado.</div></div>
+<div class="dia-resumen"><div class="dia-res-card"><div class="dia-res-num">Frutas</div><div class="dia-res-lbl">bloque 16:00</div></div><div class="dia-res-card"><div class="dia-res-num">Sábado</div><div class="dia-res-lbl">agenda a preparar</div></div><div class="dia-res-card"><div class="dia-res-num">3</div><div class="dia-res-lbl">instrucciones a despachar</div></div></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">7:30 – 8:30</span><span class="crono-titulo">Arranque estándar</span><span class="crono-art" style="${AB}">📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Rutina base de arranque</div><div class="step-desc">Hoy el emprendimiento de las 16:00 es Frutas temporada. Asegúrate de despachar la instrucción al equipo/socio en el primer envío de las 8am.</div><div class="step-art-ref">📋 Bríefing → Arranque 7:30</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">16:00 – 18:30</span><span class="crono-titulo">Bloque Frutas temporada</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#5B3FBF')}<div class="step-body"><div class="step-title">Abre Estado semanal → Frutas temporada</div><div class="step-desc">Revisa avance del equipo/socio, próximo hito y alertas activas. Ejecuta el bloque con ese contexto.</div><div class="step-art-ref">📊 Estado semanal → Frutas temporada</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Al terminar: audio o texto → actualizar Estado semanal</div><div class="step-desc">Caja azul → "✦ Actualizar campos con IA". Hito, instrucción y alerta actualizados.</div><div class="step-art-ref">📊 Estado semanal → Frutas → caja audio</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">18:30 – 19:00</span><span class="crono-titulo">Cierre + generación agenda del sábado</span><span class="crono-art" style="${AE}">📊 Estado + 📋 Bríefing</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A5FAA')}<div class="step-body"><div class="step-title">Ejecuta el cierre estándar del Bríefing</div><div class="step-desc">Pestaña Cierre: decisiones de la semana, compromisos, señal. Genera la síntesis con IA.</div><div class="step-art-ref">📋 Bríefing → Cierre 18:30</div></div></li>
+<li class="crono-step">${sn(2,'#9A6400')}<div class="step-body"><div class="step-title">Genera la agenda del sábado estratégico</div><div class="step-desc">Estado semanal → pestaña Sábado → "✦ Generar agenda del sábado". Con el estado actualizado de los 3 proyectos, Claude genera la distribución exacta de las 4 horas.</div><div class="step-art-ref">📊 Estado semanal → Sábado → Generar agenda</div></div></li>
+<li class="crono-step">${sn(3,'#9A6400')}<div class="step-body"><div class="step-title">Copia y guarda la agenda del sábado</div><div class="step-desc">Botón "Copiar agenda". Guárdala en una nota de WhatsApp para ti o en el bríefing del sábado. El sábado a las 8am la abres y arrancas directo.</div><div class="step-tip">No empieces el sábado desde cero. La agenda debe estar hecha desde el viernes.</div></div></li>
+<li class="crono-step">${sn(4,'#1A7A3C')}<div class="step-body"><div class="step-title">Despacha instrucciones semanales a los 3 equipos</div><div class="step-desc">Con el análisis del Estado semanal, envía hoy las instrucciones de la semana siguiente a Red EV, Consultoría IA y Frutas. Antes del mediodía del sábado como límite máximo.</div><div class="step-tip">Si los equipos reciben instrucciones hoy viernes, el lunes arrancan sin necesitarte.</div></div></li>
+</ul></div>`,
+
+sab:`<div class="dia-intro"><div class="dia-intro-title">Sábado — bloque estratégico 8:00 – 12:00</div><div class="dia-intro-desc">El sábado es tu único bloque de alta energía sin interrupciones de la EICE. Se usa exclusivamente para pensar, decidir y producir instrucciones. Sin reuniones operativas, sin WhatsApp de socios, sin correos. Cuatro horas de pensamiento puro.</div></div>
+<div class="dia-resumen"><div class="dia-res-card"><div class="dia-res-num">4h</div><div class="dia-res-lbl">8:00 – 12:00</div></div><div class="dia-res-card"><div class="dia-res-num">1 decisión</div><div class="dia-res-lbl">por emprendimiento</div></div><div class="dia-res-card"><div class="dia-res-num">3</div><div class="dia-res-lbl">instrucciones antes de 12m</div></div></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">8:00 – 8:30</span><span class="crono-titulo">Apertura — revisión semanal integrada</span><span class="crono-art" style="${AE}">📊 Estado semanal + ⌘ Centro</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#9A6400')}<div class="step-body"><div class="step-title">Abre el Estado semanal → Resumen</div><div class="step-desc">Revisa las tres tarjetas de progreso: avance, próximo hito y alertas de cada emprendimiento. Es el punto de partida del sábado.</div><div class="step-art-ref">📊 Estado semanal → Resumen</div></div></li>
+<li class="crono-step">${sn(2,'#9A6400')}<div class="step-body"><div class="step-title">Lee el análisis integrado generado el jueves</div><div class="step-desc">Si lo generaste el jueves, está guardado. Si no, genera ahora: Estado semanal → Resumen → "✦ Análisis IA". Lee el diagnóstico completo.</div><div class="step-art-ref">📊 Estado semanal → Resumen → Análisis IA</div></div></li>
+<li class="crono-step">${sn(3,'#444441')}<div class="step-body"><div class="step-title">Abre el Centro de comando → Mis tareas y Checklist</div><div class="step-desc">Revisa tareas propias pendientes y marca las del checklist de arranque que completaste esta semana.</div><div class="step-art-ref">⌘ Centro → Mis tareas + Checklist arranque</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">8:30 – 9:30</span><span class="crono-titulo">Bloque Red EV — escala y modelo financiero</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#9A6400')}<div class="step-body"><div class="step-title">Abre Estado semanal → Red EV</div><div class="step-desc">Revisa estado comercial, financiero y operativo. Ten la pestaña visible mientras piensas.</div><div class="step-art-ref">📊 Estado semanal → Red EV</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Copia el Prompt maestro de Emprendimientos y úsalo en Claude</div><div class="step-desc">Centro → Prompt maestro → Emprendimientos. Completa los corchetes con el estado de Red EV. Pégalo en el Proyecto Red EV+Frutas de Claude (Google cuenta #3).</div><div class="step-art-ref">⌘ Centro → Prompt maestro → Emprendimientos</div></div></li>
+<li class="crono-step">${sn(3,'#9A6400')}<div class="step-body"><div class="step-title">Toma la decisión y escribe la instrucción semanal para los socios</div><div class="step-desc">Con el análisis de Claude, decide. Escribe la instrucción en el campo "Instrucción para socios esta semana" del Estado semanal. Guarda.</div><div class="step-art-ref">📊 Estado semanal → Red EV → instrucción socios</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">9:30 – 10:30</span><span class="crono-titulo">Bloque Consultoría IA — dirección del piloto</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#1A7A3C')}<div class="step-body"><div class="step-title">Abre Estado semanal → Consultoría IA</div><div class="step-desc">Revisa los 3 clientes piloto, aprendizajes de la semana y cliente prioritario. Ten el análisis del jueves como referencia.</div><div class="step-art-ref">📊 Estado semanal → Consultoría IA</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Prompt maestro de Emprendimientos ajustado a Consultoría IA</div><div class="step-desc">Mismo proceso: completa el prompt con el estado de Consultoría IA y pégalo en el Proyecto Consultoría IA de Claude (Google cuenta #2).</div><div class="step-art-ref">⌘ Centro → Prompt maestro → Emprendimientos</div></div></li>
+<li class="crono-step">${sn(3,'#1A7A3C')}<div class="step-body"><div class="step-title">Actualiza instrucciones por rol del equipo</div><div class="step-desc">Escribe en el campo "Instrucciones por rol del equipo" del Estado semanal: qué hace el ingeniero, la abogada, el comercial y la experta en procesos la semana siguiente.</div><div class="step-art-ref">📊 Estado semanal → Consultoría IA → instrucciones equipo</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">10:30 – 11:30</span><span class="crono-titulo">Bloque Frutas temporada — hoja de ruta</span><span class="crono-art" style="${AE}">📊 Estado semanal</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#5B3FBF')}<div class="step-body"><div class="step-title">Abre Estado semanal → Frutas temporada</div><div class="step-desc">Revisa avance del equipo/socio, decisiones de marca pendientes y próximo hito. Toma la decisión que lleva más tiempo aplazada.</div><div class="step-art-ref">📊 Estado semanal → Frutas temporada</div></div></li>
+<li class="crono-step">${sn(2,'#5B3FBF')}<div class="step-body"><div class="step-title">Documenta el hito y la instrucción para el equipo</div><div class="step-desc">Actualiza los campos de hito y de instrucción al equipo/socio con lo que decidiste. Guarda el Estado semanal.</div><div class="step-art-ref">📊 Estado semanal → Frutas → hito + instrucción</div></div></li>
+</ul></div>
+<div class="crono-bloque"><div class="crono-header"><span class="crono-hora">11:30 – 12:00</span><span class="crono-titulo">Cierre estratégico — despacho y bríefing del lunes</span><span class="crono-art" style="${AE}">📊 Estado + 📋 Bríefing + ⌘ Centro</span></div><ul class="crono-steps">
+<li class="crono-step">${sn(1,'#9A6400')}<div class="step-body"><div class="step-title">Genera el resumen ejecutivo del sábado</div><div class="step-desc">Centro → Prompt maestro → Sábado estratégico. Completa los corchetes con las decisiones tomadas hoy y pégalo en Claude para generar el resumen integrado.</div><div class="step-art-ref">⌘ Centro → Prompt maestro → Sábado estratégico</div></div></li>
+<li class="crono-step">${sn(2,'#1A7A3C')}<div class="step-body"><div class="step-title">Despacha las 3 instrucciones semanales antes del mediodía</div><div class="step-desc">Copia las instrucciones de Red EV, Consultoría IA y Frutas desde el Estado semanal y envíalas por WhatsApp a los equipos. Antes de las 12:00 del sábado.</div><div class="step-tip">Este es el entregable más importante del sábado. Si los equipos reciben instrucciones antes del mediodía, el lunes arrancan sin necesitarte.</div></div></li>
+<li class="crono-step">${sn(3,'#1A5FAA')}<div class="step-body"><div class="step-title">Genera el bríefing del lunes</div><div class="step-desc">Abre el Bríefing → Arranque → pega el resumen ejecutivo del sábado → genera con IA. El lunes a las 7:30am tienes el bríefing pre-armado esperándote.</div><div class="step-art-ref">📋 Bríefing → Arranque → pegar resumen sábado → Generar IA</div></div></li>
+<li class="crono-step">${sn(4,'#B02A2A')}<div class="step-body"><div class="step-title">Cierra los 3 artefactos y desconéctate a las 12:00</div><div class="step-desc">Guarda el Estado semanal, el Bríefing y el Centro. A partir del mediodía del sábado no más trabajo. El sistema está listo para la semana siguiente.</div><div class="step-tip">El sábado termina a las 12:00 en punto. Esa disciplina es parte del sistema.</div></div></li>
+</ul></div>`
+  };
+
+  document.getElementById('guia-content').innerHTML=contenido[dia]||'<div style="padding:20px;text-align:center;color:var(--text3)">Contenido no encontrado.</div>';
+}
+function initGuia(){ mostrarGuia('lv'); }
+
+init();
+</script>
+</body>
+</html>

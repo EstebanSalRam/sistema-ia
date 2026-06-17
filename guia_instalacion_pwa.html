@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de instalación — Sistema IA</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{--bg:#F7F6F3;--surface:#FFF;--surface2:#F0EEE9;--border:#E2DED6;--border2:#C8C3B8;--text:#1A1915;--text2:#5C5A54;--text3:#9A9890;--green:#1A7A3C;--green-bg:#EAF5EE;--green-b:#B6E0C5;--blue:#1A5FAA;--blue-bg:#EBF2FB;--blue-b:#B8D0EE;--amber:#9A6400;--amber-bg:#FDF3E0;--amber-b:#F0D598;--red:#B02A2A;--red-bg:#FDECEA;--red-b:#F5C0BC;--purple:#5B3FBF;--purple-bg:#F0EDFB;--purple-b:#CBBFF5;--sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--r:10px;--rs:6px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 60px;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;}
+.logo{width:32px;height:32px;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600;}
+.topbar-title{font-size:14px;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--text3);}
+.main{max-width:720px;margin:0 auto;padding:24px 16px;}
+.fase{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.fase-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;}
+.fase-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;color:#fff;}
+.fase-titulo{font-size:13px;font-weight:600;}
+.fase-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.fase-tiempo{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;border:0.5px solid;margin-left:auto;}
+.paso{display:flex;gap:12px;padding:12px 16px;border-bottom:0.5px solid var(--border);align-items:flex-start;}
+.paso:last-child{border-bottom:none;}
+.paso-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px;}
+.paso-body{flex:1;}
+.paso-title{font-size:12px;font-weight:500;margin-bottom:3px;}
+.paso-desc{font-size:11px;color:var(--text2);line-height:1.6;}
+.code-block{font-family:var(--mono);font-size:11px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--rs);padding:8px 12px;margin-top:6px;line-height:1.7;word-break:break-all;}
+.tip{background:var(--amber-bg);border:0.5px solid var(--amber-b);border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--amber);margin-top:6px;line-height:1.5;}
+.success{background:var(--green-bg);border:0.5px solid var(--green-b);border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--green);margin-top:6px;line-height:1.5;}
+.warning{background:var(--red-bg);border:0.5px solid var(--red-b);border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--red);margin-top:6px;line-height:1.5;}
+.url-input-wrap{margin-top:24px;background:var(--surface);border:2px solid var(--purple-b);border-radius:var(--r);padding:16px;}
+.url-label{font-size:12px;font-weight:600;color:var(--purple);margin-bottom:8px;}
+.url-desc{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+input.url-field{width:100%;padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--rs);font-family:var(--mono);font-size:12px;color:var(--text);outline:none;background:var(--surface2);}
+input.url-field:focus{border-color:var(--purple);background:var(--surface);}
+.btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.btn{font-size:12px;font-weight:500;padding:8px 16px;border-radius:var(--rs);border:0.5px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;}
+.btn:hover{background:var(--surface2);}
+.btn-primary{background:var(--purple);color:#fff;border-color:var(--purple);}
+.btn-primary:hover{background:#4a32a0;}
+.status-box{margin-top:10px;padding:10px 12px;border-radius:var(--rs);font-size:12px;display:none;}
+.install-section{margin-top:24px;}
+.install-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;}
+.install-title{font-size:13px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.install-steps{list-style:none;}
+.install-steps li{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:0.5px solid var(--border);line-height:1.5;display:flex;gap:8px;}
+.install-steps li:last-child{border-bottom:none;}
+.install-steps li::before{content:'→';color:var(--text3);flex-shrink:0;}
+.section-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">⚙</div>
+  <div>
+    <div class="topbar-title">Guía de instalación — Sistema IA</div>
+    <div class="topbar-sub">PWA + Google Sheets · Una sola vez · ~15 minutos</div>
+  </div>
+</div>
+<div class="main">
+
+  <div class="section-label">Fase 1 — Configurar Google Apps Script</div>
+
+  <div class="fase">
+    <div class="fase-header">
+      <div class="fase-num" style="background:#1A5FAA;">1</div>
+      <div><div class="fase-titulo">Crear el Google Sheet de sincronización</div><div class="fase-sub">En la cuenta Google de tu preferencia</div></div>
+      <span class="fase-tiempo" style="background:#EBF2FB;color:#1A5FAA;border-color:#B8D0EE;">2 min</span>
+    </div>
+    <div class="paso"><div class="paso-num" style="background:#1A5FAA;">1</div><div class="paso-body"><div class="paso-title">Abre Google Sheets en tu cuenta Google</div><div class="paso-desc">Ve a sheets.google.com y crea un nuevo spreadsheet en blanco. Nómbralo "Sistema IA — Sincronización".</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#1A5FAA;">2</div><div class="paso-body"><div class="paso-title">En el menú, ve a Extensiones → Apps Script</div><div class="paso-desc">Se abre el editor de Apps Script en una nueva pestaña.</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#1A5FAA;">3</div><div class="paso-body"><div class="paso-title">Borra todo el código que aparece</div><div class="paso-desc">El editor muestra una función vacía por defecto. Selecciona todo (Cmd+A) y bórralo.</div></div></div>
+  </div>
+
+  <div class="fase">
+    <div class="fase-header">
+      <div class="fase-num" style="background:#5B3FBF;">2</div>
+      <div><div class="fase-titulo">Pegar y publicar el código</div><div class="fase-sub">El código está en el archivo apps_script_sync.js</div></div>
+      <span class="fase-tiempo" style="background:#F0EDFB;color:#5B3FBF;border-color:#CBBFF5;">5 min</span>
+    </div>
+    <div class="paso"><div class="paso-num" style="background:#5B3FBF;">1</div><div class="paso-body"><div class="paso-title">Abre el archivo apps_script_sync.js y copia todo su contenido</div><div class="paso-desc">Está en la misma carpeta que los artefactos. Ábrelo con cualquier editor de texto (TextEdit en Mac), selecciona todo y copia.</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#5B3FBF;">2</div><div class="paso-body"><div class="paso-title">Pega el código en el editor de Apps Script</div><div class="paso-desc">Haz clic en el editor y pega (Cmd+V). Verás el código completo con funciones doGet, doPost y otras.</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#5B3FBF;">3</div><div class="paso-body"><div class="paso-title">Guarda el proyecto</div><div class="paso-desc">Haz clic en el ícono de guardar (disco) o presiona Cmd+S. Ponle nombre al proyecto: "Sistema IA Sync".</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#5B3FBF;">4</div><div class="paso-body"><div class="paso-title">Implementar como Web App</div><div class="paso-desc">Haz clic en el botón azul "Implementar" → "Nueva implementación".</div><div class="tip">En la ventana que aparece: Tipo = Aplicación web · Ejecutar como = Yo (tu email) · Quién tiene acceso = Cualquier usuario. Luego haz clic en "Implementar".</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#5B3FBF;">5</div><div class="paso-body"><div class="paso-title">Autorizar y copiar la URL</div><div class="paso-desc">Google pedirá que autorices el acceso. Acepta todos los permisos. Al terminar aparece una URL larga que empieza con "https://script.google.com/macros/s/..."</div><div class="warning">Copia esa URL completa y guárdala. La necesitarás en el siguiente paso. Si la pierdes, puedes volver a obtenerla en Implementar → Administrar implementaciones.</div></div></div>
+  </div>
+
+  <div class="fase">
+    <div class="fase-header">
+      <div class="fase-num" style="background:#1A7A3C;">3</div>
+      <div><div class="fase-titulo">Conectar los artefactos con tu URL</div><div class="fase-sub">Una sola vez — se guarda en todos los dispositivos</div></div>
+      <span class="fase-tiempo" style="background:#EAF5EE;color:#1A7A3C;border-color:#B6E0C5;">3 min</span>
+    </div>
+    <div class="paso"><div class="paso-num" style="background:#1A7A3C;">1</div><div class="paso-body"><div class="paso-title">Pega tu URL de Apps Script aquí abajo</div><div class="paso-desc">El sistema la guarda y la propaga a los 3 artefactos automáticamente cuando los abras.</div></div></div>
+  </div>
+
+  <div class="url-input-wrap">
+    <div class="url-label">✦ Tu URL de Google Apps Script</div>
+    <div class="url-desc">Pega aquí la URL que copiaste en el Paso 2.5. Empieza con "https://script.google.com/macros/s/..."</div>
+    <input type="url" class="url-field" id="script-url-input" placeholder="https://script.google.com/macros/s/AKfy.../exec">
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="guardarURL()">Guardar URL y verificar conexión</button>
+      <button class="btn" onclick="document.getElementById('script-url-input').value=''">Limpiar</button>
+    </div>
+    <div class="status-box" id="status-box"></div>
+  </div>
+
+  <div class="section-label">Fase 2 — Instalar los artefactos como apps en tus dispositivos</div>
+
+  <div class="install-section">
+    <div class="install-card">
+      <div class="install-title">📱 iPhone e iPad</div>
+      <ul class="install-steps">
+        <li>Abre Safari en tu iPhone o iPad</li>
+        <li>Navega al archivo HTML desde iCloud Drive (Files app → iCloud Drive → carpeta Briefing)</li>
+        <li>Toca el ícono de compartir (cuadrado con flecha hacia arriba) en la barra de Safari</li>
+        <li>Desplázate hacia abajo y toca "Añadir a pantalla de inicio"</li>
+        <li>Ponle el nombre que quieras (ej: "Bríefing", "Estado Semanal", "Comando") y toca "Añadir"</li>
+        <li>El ícono aparece en tu pantalla de inicio como una app nativa</li>
+        <li>Repite para los 3 artefactos</li>
+      </ul>
+      <div class="success">Desde ese momento, al abrir desde la pantalla de inicio, el artefacto se abre a pantalla completa sin barra de Safari y funciona como una app real.</div>
+    </div>
+
+    <div class="install-card">
+      <div class="install-title">💻 MacBook Pro</div>
+      <ul class="install-steps">
+        <li>Abre Safari en tu Mac</li>
+        <li>Abre el archivo HTML desde iCloud Drive en Finder</li>
+        <li>En el menú de Safari ve a Archivo → "Añadir a Dock" (o "Add to Dock")</li>
+        <li>El artefacto se instala como app en tu Dock</li>
+        <li>Repite para los 3 artefactos</li>
+      </ul>
+      <div class="tip">En macOS Sequoia (15.x) esta opción está en el menú Archivo de Safari. Si no aparece, puedes crear un acceso directo desde el Dock arrastrando el ícono de la pestaña de Safari.</div>
+    </div>
+  </div>
+
+  <div class="section-label">Fase 3 — Verificar que todo funciona</div>
+
+  <div class="fase">
+    <div class="fase-header">
+      <div class="fase-num" style="background:#9A6400;">4</div>
+      <div><div class="fase-titulo">Prueba de sincronización entre dispositivos</div><div class="fase-sub">Hacerla una sola vez para confirmar</div></div>
+      <span class="fase-tiempo" style="background:#FDF3E0;color:#9A6400;border-color:#F0D598;">5 min</span>
+    </div>
+    <div class="paso"><div class="paso-num" style="background:#9A6400;">1</div><div class="paso-body"><div class="paso-title">En el Mac: abre el Centro de comando, marca 3 tareas del checklist y guarda</div><div class="paso-desc">Haz clic en "Guardar". Espera 3 segundos para que se sincronice con Google Sheets.</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#9A6400;">2</div><div class="paso-body"><div class="paso-title">En el iPhone: abre el Centro de comando desde la pantalla de inicio</div><div class="paso-desc">Espera que cargue. Si las 3 tareas aparecen marcadas, la sincronización funciona perfectamente.</div><div class="success">Si los datos aparecen en el iPhone: el sistema está 100% operativo. Todos los artefactos compartirán datos automáticamente entre tus dispositivos.</div></div></div>
+    <div class="paso"><div class="paso-num" style="background:#9A6400;">3</div><div class="paso-body"><div class="paso-title">Si los datos NO aparecen en el iPhone</div><div class="paso-desc">Verifica que la URL de Apps Script esté bien pegada en el campo de arriba. Vuelve a Google Apps Script y confirma que la implementación esté activa y tenga acceso "Cualquier usuario".</div></div></div>
+  </div>
+
+  <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-top:10px;">
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;">Estado actual de la sincronización</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:600;" id="status-conn">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Conexión Google</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:600;" id="status-url">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">URL configurada</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:10px;text-align:center;">
+        <div style="font-size:18px;font-weight:600;" id="status-sync">—</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Último sync</div>
+      </div>
+    </div>
+    <button class="btn" style="margin-top:10px;width:100%;" onclick="verificarStatus()">Verificar estado ahora</button>
+  </div>
+
+</div>
+
+<script>
+const URL_KEY = '_sistema_ia_script_url';
+
+function getSavedUrl(){ return localStorage.getItem(URL_KEY)||''; }
+function saveUrl(url){ localStorage.setItem(URL_KEY, url); }
+
+function init(){
+  const saved = getSavedUrl();
+  if(saved){ document.getElementById('script-url-input').value=saved; }
+  verificarStatus();
+}
+
+async function guardarURL(){
+  const url = document.getElementById('script-url-input').value.trim();
+  const statusBox = document.getElementById('status-box');
+  if(!url || !url.startsWith('https://script.google.com')){
+    statusBox.style.display='block';
+    statusBox.style.background='var(--red-bg)';
+    statusBox.style.color='var(--red)';
+    statusBox.style.border='0.5px solid var(--red-b)';
+    statusBox.style.borderRadius='var(--rs)';
+    statusBox.style.padding='10px 12px';
+    statusBox.textContent='La URL no parece válida. Debe empezar con https://script.google.com/macros/s/';
+    return;
+  }
+  saveUrl(url);
+  statusBox.style.display='block';
+  statusBox.style.background='var(--amber-bg)';
+  statusBox.style.color='var(--amber)';
+  statusBox.style.border='0.5px solid var(--amber-b)';
+  statusBox.style.borderRadius='var(--rs)';
+  statusBox.style.padding='10px 12px';
+  statusBox.textContent='Verificando conexión con Google Sheets...';
+  try{
+    const params = new URLSearchParams({artefacto:'ping',clave:'test'});
+    const res = await fetch(`${url}?${params}`);
+    const data = await res.json();
+    if(data.ok !== false){
+      statusBox.style.background='var(--green-bg)';
+      statusBox.style.color='var(--green)';
+      statusBox.style.borderColor='var(--green-b)';
+      statusBox.textContent='✓ Conexión exitosa con Google Sheets. La URL está guardada y los 3 artefactos la usarán automáticamente.';
+      localStorage.setItem('_sistema_ia_last_sync', new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+    } else {
+      throw new Error('Respuesta inválida');
+    }
+  } catch(e){
+    statusBox.style.background='var(--red-bg)';
+    statusBox.style.color='var(--red)';
+    statusBox.style.borderColor='var(--red-b)';
+    statusBox.textContent='No se pudo conectar. Verifica que la implementación esté activa en Apps Script y que el acceso sea "Cualquier usuario".';
+  }
+  verificarStatus();
+}
+
+function verificarStatus(){
+  const url = getSavedUrl();
+  document.getElementById('status-url').textContent = url ? '✓' : '✗';
+  document.getElementById('status-url').style.color = url ? 'var(--green)' : 'var(--red)';
+  const lastSync = localStorage.getItem('_sistema_ia_last_sync');
+  document.getElementById('status-sync').textContent = lastSync || '—';
+  document.getElementById('status-conn').textContent = url ? '...' : '✗';
+  document.getElementById('status-conn').style.color = url ? 'var(--amber)' : 'var(--red)';
+  if(url){
+    const params = new URLSearchParams({artefacto:'ping',clave:'test'});
+    fetch(`${url}?${params}`)
+      .then(r=>r.json())
+      .then(d=>{
+        document.getElementById('status-conn').textContent = d.ok!==false?'✓':'✗';
+        document.getElementById('status-conn').style.color = d.ok!==false?'var(--green)':'var(--red)';
+      })
+      .catch(()=>{
+        document.getElementById('status-conn').textContent='✗';
+        document.getElementById('status-conn').style.color='var(--red)';
+      });
+  }
+}
+
+init();
+</script>
+</body>
+</html>

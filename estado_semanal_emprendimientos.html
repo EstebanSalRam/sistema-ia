@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Estado Semanal">
+<meta name="theme-color" content="#1A1915">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A1915'/><text y='.9em' font-size='70' x='15'>📊</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado semanal — Emprendimientos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --bg: #F7F6F3; --surface: #FFFFFF; --surface2: #F0EEE9;
+  --border: #E2DED6; --border2: #C8C3B8;
+  --text: #1A1915; --text2: #5C5A54; --text3: #9A9890;
+  --amber: #9A6400; --amber-bg: #FDF3E0; --amber-b: #F0D598;
+  --green: #1A7A3C; --green-bg: #EAF5EE; --green-b: #B6E0C5;
+  --purple: #5B3FBF; --purple-bg: #F0EDFB; --purple-b: #CBBFF5;
+  --blue: #1A5FAA; --blue-bg: #EBF2FB; --blue-b: #B8D0EE;
+  --red: #B02A2A; --red-bg: #FDECEA; --red-b: #F5C0BC;
+  --coral: #993C1D; --coral-bg: #FAECE7; --coral-b: #F5C4B3;
+  --sans: 'Inter', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --r: 10px; --r-sm: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.logo { width: 30px; height: 30px; background: var(--text); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.topbar-title { font-size: 13px; font-weight: 600; }
+.topbar-sub { font-size: 11px; color: var(--text3); }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.semana-chip { font-family: var(--mono); font-size: 11px; color: var(--text2); background: var(--surface2); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
+.btn { font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; transition: background .1s; white-space: nowrap; }
+.btn:hover { background: var(--surface2); }
+.btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary:hover { background: #333; }
+.btn-ia { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-b); }
+.btn-ia:hover { background: #e5dff9; }
+
+.tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; overflow-x: auto; }
+.tab { font-size: 12px; font-weight: 500; padding: 10px 16px; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; white-space: nowrap; transition: color .15s, border-color .15s; display: flex; align-items: center; gap: 6px; }
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
+.tab:hover:not(.active) { color: var(--text2); }
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.main { max-width: 900px; margin: 0 auto; padding: 20px 16px 80px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* OVERVIEW CARDS */
+.overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; cursor: pointer; transition: border-color .15s; }
+.ov-card:hover { border-color: var(--border2); }
+.ov-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ov-name { font-size: 13px; font-weight: 600; }
+.ov-stage { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px; border: 1px solid; }
+.ov-metric { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.ov-num { font-size: 22px; font-weight: 600; line-height: 1; }
+.ov-num-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.ov-progress-wrap { margin-bottom: 8px; }
+.ov-progress-label { font-size: 10px; color: var(--text3); display: flex; justify-content: space-between; margin-bottom: 3px; }
+.ov-progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.ov-progress-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+.ov-hito { font-size: 11px; color: var(--text2); line-height: 1.4; }
+.ov-alerta { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: var(--r-sm); display: inline-block; margin-top: 6px; border: 1px solid; }
+
+/* SECCION */
+.sec { margin-bottom: 14px; }
+.sec-head { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.sec-icon { width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.si-amber  { background: var(--amber-bg);  color: var(--amber); }
+.si-green  { background: var(--green-bg);  color: var(--green); }
+.si-purple { background: var(--purple-bg); color: var(--purple); }
+.si-blue   { background: var(--blue-bg);   color: var(--blue); }
+.si-red    { background: var(--red-bg);    color: var(--red); }
+.si-coral  { background: var(--coral-bg);  color: var(--coral); }
+.sec-title { font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+
+/* CAMPOS */
+.field-group { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.field-group:last-child { border-bottom: none; }
+.field-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+.field { width: 100%; padding: 9px 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); font-family: var(--sans); font-size: 12px; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color .12s; }
+.field:focus { border-color: var(--border2); background: var(--surface); }
+.field::placeholder { color: var(--text3); }
+select.field { height: 34px; resize: none; cursor: pointer; }
+input[type=range] { width: 100%; accent-color: var(--text); }
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-val { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 32px; text-align: right; }
+
+/* HITOS */
+.hito-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 13px; border-bottom: 1px solid var(--border); }
+.hito-item:last-child { border-bottom: none; }
+.hito-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.hito-body { flex: 1; }
+.hito-title { font-size: 12px; font-weight: 500; color: var(--text); }
+.hito-fecha { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.hito-estado { font-size: 10px; padding: 1px 7px; border-radius: 10px; border: 1px solid; display: inline-block; margin-top: 3px; }
+.chk { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border2); cursor: pointer; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .12s; }
+.chk.done { background: var(--green); border-color: var(--green); }
+.chk.done::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 600; }
+
+/* IA */
+.ia-box { background: var(--purple-bg); border: 1px solid var(--purple-b); border-radius: var(--r); padding: 14px; margin-top: 12px; }
+.ia-label { font-size: 10px; font-weight: 600; color: var(--purple); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+.ia-output { font-size: 12px; color: var(--text2); line-height: 1.7; min-height: 60px; white-space: pre-wrap; }
+.ia-output.loading { color: var(--text3); font-style: italic; }
+
+/* HISTORIAL */
+.hist-week { padding: 14px; border-bottom: 1px solid var(--border); }
+.hist-week:last-child { border-bottom: none; }
+.hist-week-label { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+.hist-emp-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hist-emp { background: var(--surface2); border-radius: var(--r-sm); padding: 8px 10px; }
+.hist-emp-name { font-size: 10px; font-weight: 600; margin-bottom: 3px; }
+.hist-emp-texto { font-size: 11px; color: var(--text2); line-height: 1.4; }
+
+/* DIVIDER */
+.divider-lbl { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 8px; margin: 16px 0 10px; }
+.divider-lbl::before, .divider-lbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.empty { text-align: center; padding: 32px 20px; color: var(--text3); font-size: 12px; }
+.empty-icon { font-size: 28px; margin-bottom: 8px; }
+
+.footer { background: var(--surface); border-top: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; flex-wrap: wrap; z-index: 100; }
+.footer-status { font-size: 11px; color: var(--text3); }
+.footer-actions { display: flex; gap: 8px; }
+
+/* SABADO BOX */
+.sab-box { background: var(--surface); border: 2px solid var(--border2); border-radius: var(--r); padding: 16px; margin-bottom: 14px; }
+.sab-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.sab-sub { font-size: 11px; color: var(--text3); margin-bottom: 12px; }
+
+/* AUDIO BOX */
+.audio-box { background: var(--blue-bg); border: 1px solid var(--blue-b); border-radius: var(--r); padding: 14px; margin-top: 12px; }
+.audio-label { font-size: 10px; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.audio-hint { font-size: 11px; color: var(--blue); opacity: .8; margin-bottom: 8px; line-height: 1.5; }
+.audio-output { font-size: 12px; color: var(--text2); line-height: 1.7; min-height: 40px; white-space: pre-wrap; }
+.audio-output.loading { color: var(--text3); font-style: italic; }
+
+/* NOTAS */
+.notas-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-top: 12px; }
+.notas-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.notas-title { font-size: 11px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.nota-item { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+.nota-item:last-child { border-bottom: none; }
+.nota-meta { flex-shrink: 0; }
+.nota-hora { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.nota-dia  { font-size: 10px; color: var(--text3); }
+.nota-tipo { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; border: 1px solid; margin-top: 3px; display: inline-block; }
+.nt-texto  { background: var(--surface2); color: var(--text2); border-color: var(--border); }
+.nt-audio  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-b); }
+.nt-ia     { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-b); }
+.nota-body { flex: 1; font-size: 12px; color: var(--text2); line-height: 1.5; }
+.nota-add-row { display: flex; gap: 8px; padding: 10px 14px; background: var(--surface2); align-items: flex-start; }
+.nota-add-row textarea { flex: 1; min-height: 36px; max-height: 120px; resize: vertical; }
+.nota-empty { padding: 20px; text-align: center; font-size: 11px; color: var(--text3); }
+
+@media (max-width: 600px) {
+  .overview-grid { grid-template-columns: 1fr; }
+  .hist-emp-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">E</div>
+    <div>
+      <div class="topbar-title">Estado semanal — Emprendimientos</div>
+      <div class="topbar-sub" id="topbar-sub">Cargando semana...</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="semana-chip" id="semana-chip"></div>
+    <button class="btn" onclick="mostrarConfigSync_S()" style="padding:6px 10px;">⚙ Sync</button>
+    <button class="btn btn-ia" onclick="generarResumenIA()">✦ Análisis con IA</button>
+    <button class="btn btn-primary" onclick="guardarSemana()">Guardar semana</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab active" onclick="showPanel('resumen')">📊 Resumen</div>
+  <div class="tab" onclick="showPanel('ev')"><span class="tab-dot" style="background:var(--amber)"></span>Red EV</div>
+  <div class="tab" onclick="showPanel('cons')"><span class="tab-dot" style="background:var(--green)"></span>Consultoría IA</div>
+  <div class="tab" onclick="showPanel('frutas')"><span class="tab-dot" style="background:var(--purple)"></span>Frutas</div>
+  <div class="tab" onclick="showPanel('sabado')">🗓 Sábado</div>
+  <div class="tab" onclick="showPanel('historial')">🗂 Historial</div>
+</nav>
+
+<main class="main">
+
+<!-- RESUMEN -->
+<div class="panel active" id="panel-resumen">
+  <div class="overview-grid" id="overview-cards">
+    <div class="ov-card" onclick="showPanel('ev')">
+      <div class="ov-header">
+        <div class="ov-name" style="color:var(--amber)">Red EV</div>
+        <span class="ov-stage" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)">En operación</span>
+      </div>
+      <div class="ov-progress-wrap">
+        <div class="ov-progress-label"><span>Avance escala</span><span id="ev-pct-lbl">0%</span></div>
+        <div class="ov-progress-bar"><div class="ov-progress-fill" id="ev-prog" style="background:var(--amber);width:0%"></div></div>
+      </div>
+      <div class="ov-hito" id="ev-hito-ov">Sin próximo hito definido</div>
+      <div class="ov-alerta" id="ev-alert-ov" style="display:none"></div>
+    </div>
+    <div class="ov-card" onclick="showPanel('cons')">
+      <div class="ov-header">
+        <div class="ov-name" style="color:var(--green)">Consultoría IA</div>
+        <span class="ov-stage" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b)">Piloto activo</span>
+      </div>
+      <div class="ov-progress-wrap">
+        <div class="ov-progress-label"><span>Avance piloto</span><span id="cons-pct-lbl">0%</span></div>
+        <div class="ov-progress-bar"><div class="ov-progress-fill" id="cons-prog" style="background:var(--green);width:0%"></div></div>
+      </div>
+      <div class="ov-hito" id="cons-hito-ov">Sin próximo hito definido</div>
+      <div class="ov-alerta" id="cons-alert-ov" style="display:none"></div>
+    </div>
+    <div class="ov-card" onclick="showPanel('frutas')">
+      <div class="ov-header">
+        <div class="ov-name" style="color:var(--purple)">Frutas temporada</div>
+        <span class="ov-stage" style="background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b)">En desarrollo</span>
+      </div>
+      <div class="ov-progress-wrap">
+        <div class="ov-progress-label"><span>Avance desarrollo</span><span id="frutas-pct-lbl">0%</span></div>
+        <div class="ov-progress-bar"><div class="ov-progress-fill" id="frutas-prog" style="background:var(--purple);width:0%"></div></div>
+      </div>
+      <div class="ov-hito" id="frutas-hito-ov">Sin próximo hito definido</div>
+      <div class="ov-alerta" id="frutas-alert-ov" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="ia-box" id="ia-resumen-box" style="display:none">
+    <div class="ia-label">✦ Análisis integrado de los 3 emprendimientos</div>
+    <div class="ia-output" id="ia-resumen-output"></div>
+  </div>
+
+  <div class="divider-lbl">decisiones estratégicas pendientes — de todos los proyectos</div>
+  <div class="card">
+    <div class="field-group">
+      <div class="field-label">Decisión más importante de la semana (cualquier proyecto)</div>
+      <textarea class="field" id="decision-global" rows="2" placeholder="Ej: Decidir si escalar EV a una nueva ciudad este trimestre o esperar al modelo financiero completo..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Cuello de botella que me está bloqueando como director</div>
+      <textarea class="field" id="cuello-botella" rows="2" placeholder="Ej: No tenemos modelo financiero actualizado de EV y eso bloquea la decisión de escala y el acceso a crédito..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">¿En qué proyecto debo enfocar más energía la próxima semana?</div>
+      <select class="field" id="foco-semana">
+        <option value="">Seleccionar...</option>
+        <option value="ev">Red EV — escala y financiero</option>
+        <option value="cons">Consultoría IA — dirección del piloto</option>
+        <option value="frutas">Frutas temporada — desarrollo de marca</option>
+        <option value="equilibrio">Equilibrado entre los tres</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- RED EV -->
+<div class="panel" id="panel-ev">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-amber">⚡</div><span class="sec-title" style="color:var(--amber)">Red de carga eléctrica — estado semanal</span></div>
+    <div class="card">
+      <div class="field-group">
+        <div class="field-label">Avance de escala esta semana <span id="ev-range-lbl" style="font-size:11px;color:var(--amber);font-weight:600">0%</span></div>
+        <div class="range-row">
+          <input type="range" id="ev-avance" min="0" max="100" value="0" oninput="updateRange('ev')">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Estado del pipeline comercial</div>
+        <textarea class="field" id="ev-comercial" rows="2" placeholder="Clientes en negociación, cierres de la semana, prospección activa..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Estado del modelo financiero</div>
+        <textarea class="field" id="ev-financiero" rows="2" placeholder="Supuestos actualizados, proyecciones, variable clave a monitorear esta semana..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Desempeño operativo</div>
+        <textarea class="field" id="ev-operativo" rows="2" placeholder="Estaciones activas, ingresos, incidencias, indicadores clave..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Próximo hito concreto</div>
+        <textarea class="field" id="ev-hito" rows="1" placeholder="Ej: Cerrar 2 clientes nuevos antes del viernes 20 de junio..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Instrucción para socios esta semana</div>
+        <textarea class="field" id="ev-instruccion" rows="2" placeholder="Qué deben avanzar en comercial, qué insumos del modelo financiero necesito, qué no pueden decidir sin mí..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Alerta o bloqueo activo</div>
+        <textarea class="field" id="ev-alerta" rows="1" placeholder="Algo que puede convertirse en problema si no se atiende esta semana..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar tarjeta desde audio o texto libre</div>
+    <div class="audio-hint">Pega aquí la transcripción de tu nota de voz o escribe libremente. La IA lee el texto y actualiza los campos de la tarjeta automáticamente.</div>
+    <textarea class="field" id="ev-audio-raw" rows="3" placeholder="Ej: Hoy los socios cerraron el cliente de Itagüí, 3 estaciones, contrato por 18 meses. El modelo financiero necesita actualizar el supuesto de precio de energía. Hay un bloqueo con la empresa de servicios públicos en Sabaneta..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('ev')">✦ Actualizar campos con IA</button>
+      <button class="btn" onclick="var v=document.getElementById('ev-audio-raw').value;if(v.trim()){agregarNota('ev','audio',v);document.getElementById('ev-audio-raw').value=''}">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="ev-audio-output" style="display:none;margin-top:8px;padding:8px;background:rgba(255,255,255,.5);border-radius:var(--r-sm);"></div>
+  </div>
+
+  <div class="ia-box">
+    <div class="ia-label">✦ Análisis estratégico de Red EV con IA</div>
+    <button class="btn btn-ia" onclick="analizarProyecto('ev')">Analizar Red EV</button>
+    <div class="ia-output" id="ia-ev-output" style="margin-top:10px;display:none"></div>
+  </div>
+
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de la semana — Red EV</span>
+      <span style="font-size:10px;color:var(--text3)" id="ev-notas-count">0 notas</span>
+    </div>
+    <div id="ev-notas-lista"><div class="nota-empty">Sin notas aún. Agrega la primera abajo.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="ev-nota-nueva" rows="1" placeholder="Nota rápida: dato, observación, pendiente, decisión informal... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNota('ev','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('ev-nota-nueva').value.trim();if(v){agregarNota('ev','texto',v);document.getElementById('ev-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONSULTORÍA IA -->
+<div class="panel" id="panel-cons">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-green">🤖</div><span class="sec-title" style="color:var(--green)">Consultoría IA — estado semanal</span></div>
+    <div class="card">
+      <div class="field-group">
+        <div class="field-label">Avance del piloto <span id="cons-range-lbl" style="font-size:11px;color:var(--green);font-weight:600">0%</span></div>
+        <div class="range-row">
+          <input type="range" id="cons-avance" min="0" max="100" value="0" oninput="updateRange('cons')">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Estado de los 3 clientes piloto</div>
+        <textarea class="field" id="cons-clientes" rows="3" placeholder="Cliente 1: [nombre/descripción] — avance, bloqueo, satisfacción&#10;Cliente 2: ...&#10;Cliente 3: ..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Aprendizajes clave de la semana sobre el servicio</div>
+        <textarea class="field" id="cons-aprendizajes" rows="2" placeholder="¿Qué funcionó diferente a lo esperado? ¿Qué ajuste necesita el modelo de servicio?"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Decisión de producto o servicio pendiente</div>
+        <textarea class="field" id="cons-decision-prod" rows="1" placeholder="Ej: Definir si ofrecemos automatización por módulos o como proyecto integral..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Instrucciones por rol del equipo</div>
+        <textarea class="field" id="cons-equipo" rows="4" placeholder="Ingeniero mecatrónico (IA): ...&#10;Abogada (contratación): ...&#10;Comercial: ...&#10;Experta en procesos: ..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Cliente prioritario esta semana y razón</div>
+        <textarea class="field" id="cons-prioritario" rows="1" placeholder="Ej: Cliente 2 — tiene reunión de seguimiento el jueves y es el más avanzado en conversión..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Alerta o bloqueo activo</div>
+        <textarea class="field" id="cons-alerta" rows="1" placeholder="Algo que puede detener el piloto si no se resuelve esta semana..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar tarjeta desde audio o texto libre</div>
+    <div class="audio-hint">Pega aquí la transcripción de tu nota de voz sobre Consultoría IA. La IA lee el texto y actualiza los campos de clientes, equipo y aprendizajes automáticamente.</div>
+    <textarea class="field" id="cons-audio-raw" rows="3" placeholder="Ej: Reunión con cliente 1 fue bien, están satisfechos con el módulo de facturación. El ingeniero necesita una semana más para inventarios. El cliente 3 preguntó por precio de mantenimiento mensual, hay que definirlo..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('cons')">✦ Actualizar campos con IA</button>
+      <button class="btn" onclick="var v=document.getElementById('cons-audio-raw').value.trim();if(v){agregarNota('cons','audio',v);document.getElementById('cons-audio-raw').value=''}">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="cons-audio-output" style="display:none;margin-top:8px;padding:8px;background:rgba(255,255,255,.5);border-radius:var(--r-sm);"></div>
+  </div>
+
+  <div class="ia-box">
+    <div class="ia-label">✦ Análisis estratégico de Consultoría IA con IA</div>
+    <button class="btn btn-ia" onclick="analizarProyecto('cons')">Analizar Consultoría IA</button>
+    <div class="ia-output" id="ia-cons-output" style="margin-top:10px;display:none"></div>
+  </div>
+
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de la semana — Consultoría IA</span>
+      <span style="font-size:10px;color:var(--text3)" id="cons-notas-count">0 notas</span>
+    </div>
+    <div id="cons-notas-lista"><div class="nota-empty">Sin notas aún. Agrega la primera abajo.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="cons-nota-nueva" rows="1" placeholder="Nota rápida: feedback de cliente, decisión de producto, observación del equipo... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNota('cons','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('cons-nota-nueva').value.trim();if(v){agregarNota('cons','texto',v);document.getElementById('cons-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- FRUTAS -->
+<div class="panel" id="panel-frutas">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-purple">🍊</div><span class="sec-title" style="color:var(--purple)">Frutas de temporada — estado semanal</span></div>
+    <div class="card">
+      <div class="field-group">
+        <div class="field-label">Avance del desarrollo <span id="frutas-range-lbl" style="font-size:11px;color:var(--purple);font-weight:600">0%</span></div>
+        <div class="range-row">
+          <input type="range" id="frutas-avance" min="0" max="100" value="0" oninput="updateRange('frutas')">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Avance del equipo / socio esta semana</div>
+        <textarea class="field" id="frutas-avance-desc" rows="2" placeholder="¿Qué avanzó el equipo? ¿Qué entregaron? ¿Qué bloqueó?"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Decisiones de marca o producto pendientes</div>
+        <textarea class="field" id="frutas-marca" rows="2" placeholder="Ej: Nombre de la marca, línea de productos para lanzar primero, canal de venta inicial (tienda física, e-commerce, mercados)..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Próximo hito concreto con fecha</div>
+        <textarea class="field" id="frutas-hito" rows="1" placeholder="Ej: Prototipo de empaque listo para el 30 de junio..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Instrucción para equipo / socio esta semana</div>
+        <textarea class="field" id="frutas-instruccion" rows="2" placeholder="Qué deben tener listo antes del próximo viernes, qué decisión necesitan de ti, qué no pueden avanzar sin tu criterio..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Alerta o bloqueo activo</div>
+        <textarea class="field" id="frutas-alerta" rows="1" placeholder="Algo que pueda frenar el desarrollo si no se resuelve..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar tarjeta desde audio o texto libre</div>
+    <div class="audio-hint">Pega aquí la transcripción de tu nota de voz sobre Frutas. La IA lee el texto y actualiza los campos de avance, marca, hito e instrucciones para el equipo.</div>
+    <textarea class="field" id="frutas-audio-raw" rows="3" placeholder="Ej: El socio mostró los primeros bocetos del empaque hoy, quedaron bien pero hay que ajustar los colores. Todavía no tenemos definido el nombre de la marca. La idea de empezar con mermeladas y dulces va bien encaminada..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('frutas')">✦ Actualizar campos con IA</button>
+      <button class="btn" onclick="var v=document.getElementById('frutas-audio-raw').value.trim();if(v){agregarNota('frutas','audio',v);document.getElementById('frutas-audio-raw').value=''}">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="frutas-audio-output" style="display:none;margin-top:8px;padding:8px;background:rgba(255,255,255,.5);border-radius:var(--r-sm);"></div>
+  </div>
+
+  <div class="ia-box">
+    <div class="ia-label">✦ Análisis estratégico de Frutas con IA</div>
+    <button class="btn btn-ia" onclick="analizarProyecto('frutas')">Analizar Frutas temporada</button>
+    <div class="ia-output" id="ia-frutas-output" style="margin-top:10px;display:none"></div>
+  </div>
+
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de la semana — Frutas temporada</span>
+      <span style="font-size:10px;color:var(--text3)" id="frutas-notas-count">0 notas</span>
+    </div>
+    <div id="frutas-notas-lista"><div class="nota-empty">Sin notas aún. Agrega la primera abajo.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="frutas-nota-nueva" rows="1" placeholder="Nota rápida: idea de producto, feedback del equipo, contacto proveedor, observación de mercado... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNota('frutas','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('frutas-nota-nueva').value.trim();if(v){agregarNota('frutas','texto',v);document.getElementById('frutas-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- SÁBADO -->
+<div class="panel" id="panel-sabado">
+  <div class="sab-box">
+    <div class="sab-title">Agenda del sábado estratégico</div>
+    <div class="sab-sub">Generada con base en el estado actual de los 3 emprendimientos</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="generarAgendaSabado()">✦ Generar agenda del sábado</button>
+      <button class="btn" onclick="copiarAgenda()">Copiar agenda</button>
+    </div>
+  </div>
+
+  <div class="ia-box" id="ia-sabado-box" style="display:none">
+    <div class="ia-label">✦ Agenda estratégica del sábado — generada con IA</div>
+    <div class="ia-output" id="ia-sabado-output"></div>
+  </div>
+
+  <div class="divider-lbl">preguntas estratégicas para el sábado</div>
+  <div class="card">
+    <div class="field-group">
+      <div class="field-label">¿Qué decisión no puedo seguir aplazando?</div>
+      <textarea class="field" id="sab-decision" rows="2" placeholder="La decisión que está bloqueando el avance de alguno de los proyectos y que solo tú puedes tomar..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">¿Qué señal débil apareció esta semana que merece atención?</div>
+      <textarea class="field" id="sab-senal" rows="2" placeholder="Algo que no es urgente todavía pero que podría convertirse en problema o en oportunidad en las próximas semanas..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Instrucciones que despacharé a los equipos antes del mediodía del sábado</div>
+      <textarea class="field" id="sab-instrucciones" rows="3" placeholder="Red EV: ...&#10;Consultoría IA: ...&#10;Frutas: ..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="panel" id="panel-historial">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-coral">🗂</div><span class="sec-title">Historial de semanas guardadas</span></div>
+    <div class="card" id="historial-lista">
+      <div class="empty"><div class="empty-icon">📅</div>Aún no hay semanas guardadas.<br>Completa el estado y haz clic en "Guardar semana".</div>
+    </div>
+  </div>
+  <button class="btn" style="margin-top:10px;color:var(--red);border-color:var(--red-b);" onclick="limpiarHistorial()">Borrar todo el historial</button>
+</div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-status" id="footer-status">Estado semanal vacío — completa los campos de cada proyecto</div>
+  <div class="footer-actions">
+    <button class="btn" onclick="nuevaSemana()">Nueva semana</button>
+    <button class="btn btn-ia" onclick="generarResumenIA()">✦ Análisis IA</button>
+    <button class="btn btn-primary" onclick="guardarSemana()">Guardar</button>
+  </div>
+</footer>
+
+<script>
+
+// ============================================================
+// SINCRONIZACIÓN GOOGLE SHEETS — estado_semanal
+// ============================================================
+const URL_SYNC_KEY_S = '_sistema_ia_script_url';
+const SCRIPT_URL_DEFAULT_S = 'https://script.google.com/macros/s/AKfycbxi-H3mbSszJsdpMXQKNEWZ8vi-0W_LdO7W6qonsgoiw04BPMw8p8eQw0_4qu6zCtlu/exec';
+function getScriptUrl_S(){ return localStorage.getItem(URL_SYNC_KEY_S)||SCRIPT_URL_DEFAULT_S; }
+
+async function syncSave_S(clave, valor){
+  const url=getScriptUrl_S(); if(!url) return false;
+  try{
+    await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({artefacto:'estado_semanal',clave,valor:typeof valor==='string'?valor:JSON.stringify(valor)})});
+    return true;
+  }catch(e){ return false; }
+}
+
+async function syncLoad_S(clave){
+  const url=getScriptUrl_S(); if(!url) return null;
+  try{
+    const r=await fetch(`${url}?${new URLSearchParams({artefacto:'estado_semanal',clave})}`);
+    const d=await r.json();
+    if(d.ok && d.data!==null && d.data!==undefined) return d.data;
+  }catch(e){}
+  return null;
+}
+
+function mostrarStatusSync_S(ok){
+  let el=document.getElementById('sync-bar-S');
+  if(!el){ el=document.createElement('div'); el.id='sync-bar-S';
+    el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:10px;padding:3px;z-index:200;transition:opacity .5s;';
+    document.body.appendChild(el); }
+  el.textContent=ok?'✓ Sincronizado con Google Sheets':'⚠ Guardado solo local';
+  el.style.background=ok?'#EAF5EE':'#FDF3E0';
+  el.style.color=ok?'#1A7A3C':'#9A6400';
+  el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0',2500);
+}
+
+function mostrarConfigSync_S(){
+  const ex=document.getElementById('sync-cfg-S');
+  if(ex){ ex.remove(); return; }
+  const url=getScriptUrl_S();
+  const ov=document.createElement('div');
+  ov.id='sync-cfg-S';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML=`
+    <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:500px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Sincronización — estado_semanal</div>
+      <div style="font-size:12px;color:#5C5A54;margin-bottom:14px;">Pega tu URL de Google Apps Script para sincronizar entre dispositivos.</div>
+      <input id="sync-inp-S" type="url" value="${url}" placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%;padding:10px;border:1px solid #C8C3B8;border-radius:6px;font-size:12px;font-family:monospace;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="guardarSyncUrl_S()" style="background:#1A1915;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Guardar y verificar</button>
+        <button onclick="document.getElementById('sync-cfg-S').remove()" style="background:#F0EEE9;border:1px solid #C8C3B8;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Cerrar</button>
+      </div>
+      <div id="sync-res-S" style="margin-top:10px;font-size:11px;"></div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+async function guardarSyncUrl_S(){
+  const url=document.getElementById('sync-inp-S').value.trim();
+  const res=document.getElementById('sync-res-S');
+  if(!url){ res.textContent='URL inválida.'; return; }
+  localStorage.setItem(URL_SYNC_KEY_S, url);
+  res.textContent='Verificando...'; res.style.color='#9A6400';
+  try{
+    const r=await fetch(`${url}?${new URLSearchParams({artefacto:'ping',clave:'test'})}`);
+    const d=await r.json();
+    if(d.ok!==false){
+      res.textContent='✓ Conexión exitosa.'; res.style.color='#1A7A3C';
+      localStorage.setItem('_sistema_ia_last_sync',new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+      setTimeout(()=>document.getElementById('sync-cfg-S')?.remove(),1500);
+    } else throw new Error();
+  }catch(e){ res.textContent='No se pudo conectar. Verifica la URL.'; res.style.color='#B02A2A'; }
+}
+// ============================================================
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const KEY = 'estado_semanal_v2_';
+const notasDB = { ev: [], cons: [], frutas: [] };
+function g(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function sv(id, val) { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; }
+
+function getWeekKey() {
+  const d = new Date();
+  const dow = d.getDay();
+  const diff = d.getDate() - dow + (dow === 0 ? -6 : 1);
+  const lunes = new Date(d.setDate(diff));
+  return KEY + lunes.getFullYear() + '-' + (lunes.getMonth()+1) + '-' + lunes.getDate();
+}
+function getSemanaLabel() {
+  const d = new Date();
+  const dow = d.getDay();
+  const diff = d.getDate() - dow + (dow === 0 ? -6 : 1);
+  const lunes = new Date(new Date().setDate(diff));
+  const viernes = new Date(lunes); viernes.setDate(lunes.getDate() + 4);
+  return `Semana ${lunes.getDate()} — ${viernes.getDate()} ${MESES[viernes.getMonth()]} ${viernes.getFullYear()}`;
+}
+
+async function init() {
+  const label = getSemanaLabel();
+  document.getElementById('semana-chip').textContent = label;
+  document.getElementById('topbar-sub').textContent = label;
+  await cargarSemana();
+  renderHistorial();
+  setInterval(guardarSemana, 30000);
+}
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function updateRange(proj) {
+  const val = document.getElementById(proj + '-avance').value;
+  document.getElementById(proj + '-range-lbl').textContent = val + '%';
+  document.getElementById(proj + '-prog').style.width = val + '%';
+  document.getElementById(proj + '-pct-lbl').textContent = val + '%';
+  actualizarOverview(proj);
+  updateStatus();
+}
+
+function actualizarOverview(proj) {
+  const hito = g(proj === 'cons' ? 'cons-hito-ov' : proj + '-hito');
+  const hitoEl = document.getElementById(proj + '-hito-ov');
+  if (hitoEl && proj !== 'cons') {
+    const hitoVal = g(proj + '-hito');
+    hitoEl.textContent = hitoVal || 'Sin próximo hito definido';
+  }
+  const alertaVal = g(proj + (proj === 'ev' ? '-alerta' : proj === 'cons' ? '-alerta' : '-alerta'));
+  const alertaEl = document.getElementById(proj + '-alert-ov');
+  if (alertaEl) {
+    if (alertaVal) {
+      alertaEl.style.display = 'inline-block';
+      alertaEl.textContent = '⚠ ' + alertaVal.substring(0, 40) + (alertaVal.length > 40 ? '...' : '');
+      alertaEl.style.background = 'var(--red-bg)';
+      alertaEl.style.color = 'var(--red)';
+      alertaEl.style.borderColor = 'var(--red-b)';
+    } else {
+      alertaEl.style.display = 'none';
+    }
+  }
+}
+
+function updateStatus() {
+  const campos = ['ev-comercial','ev-financiero','cons-clientes','cons-aprendizajes','frutas-avance-desc','frutas-hito'];
+  const llenos = campos.filter(id => g(id).trim()).length;
+  document.getElementById('footer-status').textContent =
+    llenos === 0 ? 'Estado semanal vacío — completa los campos de cada proyecto' :
+    llenos < 4   ? `En progreso — ${llenos} de ${campos.length} secciones clave` :
+                   'Estado semanal completo ✓ — listo para el sábado estratégico';
+}
+
+// PERSISTENCIA
+function getData() {
+  return {
+    ts: new Date().toISOString(),
+    ev_avance: g('ev-avance'), ev_comercial: g('ev-comercial'),
+    ev_financiero: g('ev-financiero'), ev_operativo: g('ev-operativo'),
+    ev_hito: g('ev-hito'), ev_instruccion: g('ev-instruccion'), ev_alerta: g('ev-alerta'),
+    cons_avance: g('cons-avance'), cons_clientes: g('cons-clientes'),
+    cons_aprendizajes: g('cons-aprendizajes'), cons_decision_prod: g('cons-decision-prod'),
+    cons_equipo: g('cons-equipo'), cons_prioritario: g('cons-prioritario'), cons_alerta: g('cons-alerta'),
+    frutas_avance: g('frutas-avance'), frutas_avance_desc: g('frutas-avance-desc'),
+    frutas_marca: g('frutas-marca'), frutas_hito: g('frutas-hito'),
+    frutas_instruccion: g('frutas-instruccion'), frutas_alerta: g('frutas-alerta'),
+    decision_global: g('decision-global'), cuello_botella: g('cuello-botella'), foco_semana: g('foco-semana'),
+    sab_decision: g('sab-decision'), sab_senal: g('sab-senal'), sab_instrucciones: g('sab-instrucciones'),
+    ia_resumen: document.getElementById('ia-resumen-output').textContent,
+    notas_ev: JSON.stringify(notasDB.ev),
+    notas_cons: JSON.stringify(notasDB.cons),
+    notas_frutas: JSON.stringify(notasDB.frutas)
+  };
+}
+function guardarSemana() {
+  const data = getData();
+  try { window.storage.set(getWeekKey(), JSON.stringify(data)); } catch(e) {}
+  localStorage.setItem(getWeekKey(), JSON.stringify(data));
+  // Sync con Google Sheets
+  try{
+    const url=getScriptUrl_S();
+    if(url){
+      fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({artefacto:'estado_semanal',clave:getWeekKey(),valor:data})})
+        .then(()=>{ let el=document.getElementById('_ss'); if(!el){el=document.createElement('div');el.id='_ss';el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';document.body.appendChild(el);} el.textContent='✓ Sincronizado con Google Sheets';el.style.background='#EAF5EE';el.style.color='#1A7A3C';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2500); })
+        .catch(()=>{});
+    }
+  }catch(e){}
+  document.getElementById('footer-status').textContent = '✓ Guardado — ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit'});
+  renderHistorial();
+}
+async function cargarSemana() {
+  let data = null;
+  // Intentar cargar desde Google Sheets primero
+  try{
+    const url=getScriptUrl_S();
+    if(url){
+      const r=await fetch(`${url}?${new URLSearchParams({artefacto:'estado_semanal',clave:getWeekKey()})}`);
+      const d=await r.json();
+      if(d.ok!==false && d.data) data=typeof d.data==='string'?JSON.parse(d.data):d.data;
+    }
+  }catch(e){}
+  if (!data) {
+    try {
+      const r = window.storage.get(getWeekKey());
+      if (r && r.value) data = JSON.parse(r.value);
+    } catch(e) {}
+  }
+  if (!data) { const r = localStorage.getItem(getWeekKey()); if (r) data = JSON.parse(r); }
+  if (!data) return;
+  const campos = {
+    'ev-avance': data.ev_avance, 'ev-comercial': data.ev_comercial,
+    'ev-financiero': data.ev_financiero, 'ev-operativo': data.ev_operativo,
+    'ev-hito': data.ev_hito, 'ev-instruccion': data.ev_instruccion, 'ev-alerta': data.ev_alerta,
+    'cons-avance': data.cons_avance, 'cons-clientes': data.cons_clientes,
+    'cons-aprendizajes': data.cons_aprendizajes, 'cons-decision-prod': data.cons_decision_prod,
+    'cons-equipo': data.cons_equipo, 'cons-prioritario': data.cons_prioritario, 'cons-alerta': data.cons_alerta,
+    'frutas-avance': data.frutas_avance, 'frutas-avance-desc': data.frutas_avance_desc,
+    'frutas-marca': data.frutas_marca, 'frutas-hito': data.frutas_hito,
+    'frutas-instruccion': data.frutas_instruccion, 'frutas-alerta': data.frutas_alerta,
+    'decision-global': data.decision_global, 'cuello-botella': data.cuello_botella, 'foco-semana': data.foco_semana,
+    'sab-decision': data.sab_decision, 'sab-senal': data.sab_senal, 'sab-instrucciones': data.sab_instrucciones
+  };
+  Object.entries(campos).forEach(([id, val]) => { if (val !== undefined) sv(id, val); });
+  ['ev','cons','frutas'].forEach(p => {
+    const el = document.getElementById(p+'-avance');
+    if (el) { updateRange(p); }
+  });
+  if (data.ia_resumen) {
+    document.getElementById('ia-resumen-output').textContent = data.ia_resumen;
+    document.getElementById('ia-resumen-box').style.display = 'block';
+  }
+  try { notasDB.ev    = JSON.parse(data.notas_ev    || '[]'); } catch(e) { notasDB.ev    = []; }
+  try { notasDB.cons  = JSON.parse(data.notas_cons  || '[]'); } catch(e) { notasDB.cons  = []; }
+  try { notasDB.frutas= JSON.parse(data.notas_frutas|| '[]'); } catch(e) { notasDB.frutas= []; }
+  renderNotas('ev'); renderNotas('cons'); renderNotas('frutas');
+  updateStatus();
+}
+function renderHistorial() {
+  const lista = document.getElementById('historial-lista');
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(KEY)) keys.push(k);
+  }
+  keys.sort().reverse();
+  if (!keys.length) {
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>Aún no hay semanas guardadas.</div>';
+    return;
+  }
+  lista.innerHTML = keys.slice(0,8).map(k => {
+    let d; try { d = JSON.parse(localStorage.getItem(k)||'{}'); } catch(e) { d = {}; }
+    const fecha = k.replace(KEY,'');
+    return `<div class="hist-week">
+      <div class="hist-week-label">Semana del ${fecha}</div>
+      <div class="hist-emp-row">
+        <div class="hist-emp"><div class="hist-emp-name" style="color:var(--amber)">Red EV ${d.ev_avance||0}%</div><div class="hist-emp-texto">${(d.ev_hito||'Sin hito').substring(0,60)}</div></div>
+        <div class="hist-emp"><div class="hist-emp-name" style="color:var(--green)">Consultoría IA ${d.cons_avance||0}%</div><div class="hist-emp-texto">${(d.cons_prioritario||'Sin cliente prioritario').substring(0,60)}</div></div>
+        <div class="hist-emp"><div class="hist-emp-name" style="color:var(--purple)">Frutas ${d.frutas_avance||0}%</div><div class="hist-emp-texto">${(d.frutas_hito||'Sin hito').substring(0,60)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function limpiarHistorial() {
+  if (!confirm('¿Borrar todo el historial de semanas?')) return;
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(KEY)) keys.push(k);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  renderHistorial();
+}
+function nuevaSemana() {
+  if (!confirm('¿Comenzar nueva semana? El contenido actual se borrará de pantalla.')) return;
+  const ids = ['ev-comercial','ev-financiero','ev-operativo','ev-hito','ev-instruccion','ev-alerta',
+    'cons-clientes','cons-aprendizajes','cons-decision-prod','cons-equipo','cons-prioritario','cons-alerta',
+    'frutas-avance-desc','frutas-marca','frutas-hito','frutas-instruccion','frutas-alerta',
+    'decision-global','cuello-botella','sab-decision','sab-senal','sab-instrucciones'];
+  ids.forEach(id => sv(id,''));
+  ['ev-avance','cons-avance','frutas-avance'].forEach(id => { const el = document.getElementById(id); if(el) el.value=0; });
+  ['ev','cons','frutas'].forEach(p => updateRange(p));
+  notasDB.ev = []; notasDB.cons = []; notasDB.frutas = [];
+  renderNotas('ev'); renderNotas('cons'); renderNotas('frutas');
+  document.getElementById('ia-resumen-output').textContent = '';
+  document.getElementById('ia-resumen-box').style.display = 'none';
+  updateStatus();
+}
+
+// IA
+async function llamarIA(prompt, outputId) {
+  const el = document.getElementById(outputId);
+  el.style.display = 'block';
+  el.classList.add('loading');
+  el.textContent = 'Analizando con IA...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    const texto = data.content?.map(b => b.text||'').join('\n') || 'Sin respuesta.';
+    el.classList.remove('loading');
+    el.textContent = texto;
+    return texto;
+  } catch(err) {
+    el.classList.remove('loading');
+    el.textContent = 'Copia el contenido y pégalo directamente en Claude para el análisis.';
+  }
+}
+
+async function generarResumenIA() {
+  const d = getData();
+  const prompt = `Soy director de 3 emprendimientos simultáneos con menos de 5 horas semanales disponibles para ellos. 
+Estado actual esta semana:
+
+RED EV (en operación, 2 socios): Avance escala ${d.ev_avance}%. Comercial: ${d.ev_comercial||'no reportado'}. Financiero: ${d.ev_financiero||'no reportado'}. Hito: ${d.ev_hito||'no definido'}. Alerta: ${d.ev_alerta||'ninguna'}.
+
+CONSULTORÍA IA (piloto con 3 clientes, equipo de 4): Avance ${d.cons_avance}%. Clientes: ${d.cons_clientes||'no reportado'}. Aprendizajes: ${d.cons_aprendizajes||'no reportado'}. Alerta: ${d.cons_alerta||'ninguna'}.
+
+FRUTAS TEMPORADA (en desarrollo, equipo/socio): Avance ${d.frutas_avance}%. Avance semana: ${d.frutas_avance_desc||'no reportado'}. Hito: ${d.frutas_hito||'no definido'}. Alerta: ${d.frutas_alerta||'ninguna'}.
+
+Decisión global pendiente: ${d.decision_global||'no definida'}.
+Cuello de botella: ${d.cuello_botella||'no identificado'}.
+
+Dame un análisis ejecutivo en este formato:
+
+🔴 ALERTA PRIORITARIA DE LA SEMANA
+[El riesgo más importante entre los 3 proyectos]
+
+📊 DIAGNÓSTICO POR PROYECTO (3 líneas cada uno)
+Red EV: [estado real y recomendación]
+Consultoría IA: [estado real y recomendación]
+Frutas: [estado real y recomendación]
+
+🎯 FOCO RECOMENDADO ESTA SEMANA
+[En qué proyecto debes invertir tu energía limitada y por qué]
+
+📋 3 DECISIONES QUE DEBES TOMAR ANTES DEL VIERNES
+[Las más urgentes de los 3 proyectos en conjunto]
+
+🗓 AGENDA DEL SÁBADO ESTRATÉGICO
+[Distribución sugerida de las 4 horas con tema específico por hora]`;
+  document.getElementById('ia-resumen-box').style.display = 'block';
+  const resultado = await llamarIA(prompt, 'ia-resumen-output');
+  guardarSemana();
+}
+
+async function analizarProyecto(proj) {
+  const d = getData();
+  const configs = {
+    ev: {
+      nombre: 'Red de carga eléctrica para vehículos eléctricos',
+      etapa: 'En operación con 2 socios a tiempo completo. Necesita escala comercial y modelo financiero.',
+      datos: `Avance escala: ${d.ev_avance}%\nComercial: ${d.ev_comercial}\nFinanciero: ${d.ev_financiero}\nOperativo: ${d.ev_operativo}\nHito próximo: ${d.ev_hito}\nInstrucción socios: ${d.ev_instruccion}\nAlerta: ${d.ev_alerta}`,
+      output: 'ia-ev-output'
+    },
+    cons: {
+      nombre: 'Consultoría de automatización con IA para MIPYMES',
+      etapa: 'Piloto activo con 3 clientes. Equipo: ingeniero mecatrónico (IA), abogada (contratación), comercial, experta en procesos.',
+      datos: `Avance piloto: ${d.cons_avance}%\nClientes: ${d.cons_clientes}\nAprendizajes: ${d.cons_aprendizajes}\nDecisión producto: ${d.cons_decision_prod}\nEquipo: ${d.cons_equipo}\nPrioritario: ${d.cons_prioritario}\nAlerta: ${d.cons_alerta}`,
+      output: 'ia-cons-output'
+    },
+    frutas: {
+      nombre: 'Marca y tiendas de productos derivados de frutas de temporada',
+      etapa: 'En desarrollo con equipo/socio trabajando.',
+      datos: `Avance: ${d.frutas_avance}%\nAvance semana: ${d.frutas_avance_desc}\nMarca/producto: ${d.frutas_marca}\nHito: ${d.frutas_hito}\nInstrucción equipo: ${d.frutas_instruccion}\nAlerta: ${d.frutas_alerta}`,
+      output: 'ia-' + proj + '-output'
+    }
+  };
+  const c = configs[proj];
+  const prompt = `Analiza el estado de este emprendimiento y dame recomendaciones ejecutivas concretas.
+
+EMPRENDIMIENTO: ${c.nombre}
+ETAPA: ${c.etapa}
+DATOS DE ESTA SEMANA:
+${c.datos}
+
+Dame en este formato exacto:
+
+📊 DIAGNÓSTICO HONESTO
+[3 líneas sobre el estado real del proyecto esta semana]
+
+🎯 LA DECISIÓN MÁS IMPORTANTE QUE DEBES TOMAR AHORA
+[Una sola decisión con argumentos a favor y en contra]
+
+⚡ RIESGO PRINCIPAL SI NO ACTÚAS ESTA SEMANA
+[Qué pasa si no tomas acción en los próximos 7 días]
+
+📤 INSTRUCCIÓN EXACTA PARA EL EQUIPO
+[El mensaje que debes enviarles esta semana, listo para copiar]
+
+🔭 SEÑAL A MONITOREAR LA PRÓXIMA SEMANA
+[Un indicador concreto que te dirá si vas bien o mal]`;
+  await llamarIA(prompt, c.output);
+}
+
+async function generarAgendaSabado() {
+  const d = getData();
+  const prompt = `Soy Gerente General de una EICE + asesor de junta + director de 3 emprendimientos. 
+El sábado tengo 4 horas libres (8am-12m) para pensar estratégicamente. No hay reuniones operativas.
+
+Estado de la semana:
+Red EV: ${d.ev_avance}% avance. Hito: ${d.ev_hito||'no definido'}. Alerta: ${d.ev_alerta||'ninguna'}.
+Consultoría IA: ${d.cons_avance}% avance. Prioritario: ${d.cons_prioritario||'no definido'}. Alerta: ${d.cons_alerta||'ninguna'}.
+Frutas: ${d.frutas_avance}% avance. Hito: ${d.frutas_hito||'no definido'}. Alerta: ${d.frutas_alerta||'ninguna'}.
+Decisión global pendiente: ${d.decision_global||'no definida'}.
+Cuello de botella: ${d.cuello_botella||'no identificado'}.
+Señal de la semana: ${d.sab_senal||'no identificada'}.
+
+Diseña mi agenda del sábado en este formato exacto:
+
+8:00–8:30 — APERTURA Y REVISIÓN SEMANAL
+[Qué revisar, qué preguntas hacerme, qué insumos necesito tener listos]
+
+8:30–9:30 — RED EV
+[Tema específico a trabajar, decisión a tomar, output concreto al terminar la hora]
+
+9:30–10:30 — CONSULTORÍA IA
+[Tema específico a trabajar, decisión a tomar, output concreto al terminar la hora]
+
+10:30–11:30 — FRUTAS TEMPORADA
+[Tema específico a trabajar, decisión a tomar, output concreto al terminar la hora]
+
+11:30–12:00 — CIERRE Y DESPACHO
+[Qué consolidar, qué instrucciones enviar a los 3 equipos antes del mediodía]
+
+PROMPT PARA CLAUDE DEL SÁBADO (listo para copiar):
+[Un prompt que puedo usar el sábado para arrancar cada bloque con IA]`;
+  document.getElementById('ia-sabado-box').style.display = 'block';
+  await llamarIA(prompt, 'ia-sabado-output');
+  guardarSemana();
+}
+
+function copiarAgenda() {
+  const el = document.getElementById('ia-sabado-output');
+  if (!el || !el.textContent.trim()) { alert('Primero genera la agenda del sábado.'); return; }
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    document.getElementById('footer-status').textContent = '✓ Agenda copiada al portapapeles';
+  });
+}
+
+// NOTAS POR PROYECTO
+function agregarNota(proj, tipo, texto) {
+  if (!texto || !texto.trim()) return;
+  const ahora = new Date();
+  const DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  notasDB[proj].push({
+    id: Date.now(),
+    tipo,
+    texto: texto.trim(),
+    dia: DIAS_C[ahora.getDay()],
+    hora: ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+    ts: ahora.toISOString()
+  });
+  renderNotas(proj);
+  guardarSemana();
+}
+
+function renderNotas(proj) {
+  const lista = document.getElementById(proj + '-notas-lista');
+  const count = document.getElementById(proj + '-notas-count');
+  const notas = notasDB[proj];
+  count.textContent = notas.length + (notas.length === 1 ? ' nota' : ' notas');
+  if (!notas.length) {
+    lista.innerHTML = '<div class="nota-empty">Sin notas aún. Agrega la primera abajo.</div>';
+    return;
+  }
+  lista.innerHTML = notas.slice().reverse().map(n => `
+    <div class="nota-item">
+      <div class="nota-meta">
+        <div class="nota-hora">${n.hora}</div>
+        <div class="nota-dia">${n.dia}</div>
+        <span class="nota-tipo nt-${n.tipo}">${n.tipo === 'texto' ? 'nota' : n.tipo === 'audio' ? 'audio' : 'ia'}</span>
+      </div>
+      <div class="nota-body">${n.texto}</div>
+      <div style="cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px;flex-shrink:0;" onclick="eliminarNota('${proj}',${n.id})" title="Eliminar">×</div>
+    </div>`).join('');
+}
+
+function eliminarNota(proj, id) {
+  notasDB[proj] = notasDB[proj].filter(n => n.id !== id);
+  renderNotas(proj);
+  guardarSemana();
+}
+
+// ACTUALIZAR CAMPOS DESDE AUDIO
+async function actualizarDesdeAudio(proj) {
+  const rawId = proj + '-audio-raw';
+  const texto = document.getElementById(rawId).value.trim();
+  if (!texto) { alert('Primero pega el texto del audio o escribe el resumen.'); return; }
+
+  const outputEl = document.getElementById(proj + '-audio-output');
+  outputEl.style.display = 'block';
+  outputEl.classList.add('loading');
+  outputEl.textContent = 'Procesando y actualizando campos...';
+
+  const configs = {
+    ev: {
+      nombre: 'Red de carga eléctrica',
+      campos: 'ev_comercial (estado del pipeline), ev_financiero (modelo financiero), ev_operativo (operación), ev_hito (próximo hito), ev_instruccion (instrucción para socios), ev_alerta (alerta o bloqueo)'
+    },
+    cons: {
+      nombre: 'Consultoría IA para MIPYMES',
+      campos: 'cons_clientes (estado de los 3 clientes piloto), cons_aprendizajes (aprendizajes del servicio), cons_decision_prod (decisión de producto pendiente), cons_equipo (instrucciones por rol), cons_prioritario (cliente prioritario), cons_alerta (alerta o bloqueo)'
+    },
+    frutas: {
+      nombre: 'Marca de frutas de temporada',
+      campos: 'frutas_avance_desc (avance del equipo/socio), frutas_marca (decisiones de marca/producto), frutas_hito (próximo hito con fecha), frutas_instruccion (instrucción para equipo/socio), frutas_alerta (alerta o bloqueo)'
+    }
+  };
+
+  const c = configs[proj];
+  const prompt = `Analiza este texto sobre el emprendimiento "${c.nombre}" y extrae la información para actualizar los campos del sistema de seguimiento.
+
+TEXTO:
+---
+${texto}
+---
+
+Responde ÚNICAMENTE en formato JSON válido, sin texto adicional, sin markdown, sin explicaciones. Solo el JSON:
+
+{
+  ${c.campos.split(', ').map(campo => {
+    const key = campo.split(' ')[0];
+    return `"${key}": "valor extraído del texto o cadena vacía si no se menciona"`;
+  }).join(',\n  ')}
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const rawJson = data.content?.map(b => b.text || '').join('').trim();
+
+    let parsed;
+    try {
+      const clean = rawJson.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('La IA no devolvió JSON válido');
+    }
+
+    // Mapeo de campos JSON a IDs del HTML
+    const mapeo = {
+      ev_comercial: 'ev-comercial', ev_financiero: 'ev-financiero',
+      ev_operativo: 'ev-operativo', ev_hito: 'ev-hito',
+      ev_instruccion: 'ev-instruccion', ev_alerta: 'ev-alerta',
+      cons_clientes: 'cons-clientes', cons_aprendizajes: 'cons-aprendizajes',
+      cons_decision_prod: 'cons-decision-prod', cons_equipo: 'cons-equipo',
+      cons_prioritario: 'cons-prioritario', cons_alerta: 'cons-alerta',
+      frutas_avance_desc: 'frutas-avance-desc', frutas_marca: 'frutas-marca',
+      frutas_hito: 'frutas-hito', frutas_instruccion: 'frutas-instruccion',
+      frutas_alerta: 'frutas-alerta'
+    };
+
+    let actualizados = [];
+    Object.entries(parsed).forEach(([key, val]) => {
+      if (val && val.trim() && mapeo[key]) {
+        const el = document.getElementById(mapeo[key]);
+        if (el) { el.value = val.trim(); actualizados.push(key); }
+      }
+    });
+
+    outputEl.classList.remove('loading');
+    outputEl.textContent = actualizados.length > 0
+      ? `✓ ${actualizados.length} campos actualizados. Revisa y ajusta si es necesario.`
+      : 'El texto no contenía suficiente información para actualizar campos. Intenta con más detalle.';
+
+    // Guardar el audio como nota también
+    agregarNota(proj, 'audio', texto);
+    document.getElementById(rawId).value = '';
+    actualizarOverview(proj);
+    guardarSemana();
+
+  } catch(err) {
+    outputEl.classList.remove('loading');
+    outputEl.textContent = 'No se pudo conectar con IA. El texto se guardó como nota para que lo copies manualmente a los campos.';
+    agregarNota(proj, 'audio', texto);
+    document.getElementById(rawId).value = '';
+  }
+}
+
+// FIN NUEVAS FUNCIONES
+
+['ev-comercial','ev-financiero','ev-operativo','ev-hito','ev-instruccion','ev-alerta',
+ 'cons-clientes','cons-aprendizajes','cons-decision-prod','cons-equipo','cons-prioritario','cons-alerta',
+ 'frutas-avance-desc','frutas-marca','frutas-hito','frutas-instruccion','frutas-alerta',
+ 'decision-global','cuello-botella','sab-decision','sab-senal','sab-instrucciones'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { updateStatus(); actualizarOverview('ev'); actualizarOverview('cons'); actualizarOverview('frutas'); });
+});
+
+init();
+</script>
+</body>
+</html>

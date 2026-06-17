@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bríefing">
+<meta name="theme-color" content="#1A1915">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A1915'/><text y='.9em' font-size='70' x='15'>📋</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bríefing diario — Sistema de gestión</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#F7F6F3;--surface:#FFF;--surface2:#F0EEE9;
+  --border:#E2DED6;--border2:#C8C3B8;
+  --text:#1A1915;--text2:#5C5A54;--text3:#9A9890;
+  --blue:#1A5FAA;--blue-bg:#EBF2FB;--blue-b:#B8D0EE;
+  --amber:#9A6400;--amber-bg:#FDF3E0;--amber-b:#F0D598;
+  --red:#B02A2A;--red-bg:#FDECEA;--red-b:#F5C0BC;
+  --green:#1A7A3C;--green-bg:#EAF5EE;--green-b:#B6E0C5;
+  --purple:#5B3FBF;--purple-bg:#F0EDFB;--purple-b:#CBBFF5;
+  --coral:#993C1D;--coral-bg:#FAECE7;--coral-b:#F5C4B3;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+.logo{width:30px;height:30px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;}
+.topbar-title{font-size:13px;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--text3);}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.date-chip{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.btn{font-size:12px;font-weight:500;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:background .1s;white-space:nowrap;}
+.btn:hover{background:var(--surface2);}
+.btn-primary{background:var(--text);color:#fff;border-color:var(--text);}
+.btn-primary:hover{background:#333;}
+.btn-ia{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b);}
+.btn-ia:hover{background:#e5dff9;}
+.btn-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);}
+.btn-blue:hover{background:#daeaf8;}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;}
+.tab{font-size:12px;font-weight:500;padding:10px 14px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--text);border-bottom-color:var(--text);}
+.tab:hover:not(.active){color:var(--text2);}
+.prog-bar{height:3px;background:var(--surface2);}
+.prog-fill{height:100%;background:var(--green);transition:width .3s;}
+.main{max-width:820px;margin:0 auto;padding:20px 16px 80px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.day-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.day-circle{width:46px;height:46px;border-radius:50%;background:var(--text);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.day-circle .dn{font-size:18px;font-weight:600;line-height:1;}
+.day-circle .dm{font-size:9px;opacity:.7;text-transform:uppercase;}
+.day-name{font-size:15px;font-weight:600;}
+.day-week{font-size:11px;color:var(--text3);margin-top:2px;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;border:1px solid;}
+.pill-red{background:var(--red-bg);color:var(--red);border-color:var(--red-b);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b);}
+.pill-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);}
+.pill-green{background:var(--green-bg);color:var(--green);border-color:var(--green-b);}
+.sec{margin-bottom:14px;}
+.sec-head{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.sec-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.si-red{background:var(--red-bg);color:var(--red);}
+.si-amber{background:var(--amber-bg);color:var(--amber);}
+.si-blue{background:var(--blue-bg);color:var(--blue);}
+.si-green{background:var(--green-bg);color:var(--green);}
+.si-purple{background:var(--purple-bg);color:var(--purple);}
+.si-coral{background:var(--coral-bg);color:var(--coral);}
+.sec-title{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.item{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-bottom:1px solid var(--border);transition:background .1s;}
+.item:last-child{border-bottom:none;}
+.item:hover{background:var(--surface2);}
+.item-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px;}
+.in-red{background:var(--red-bg);color:var(--red);}
+.in-amber{background:var(--amber-bg);color:var(--amber);}
+.in-blue{background:var(--blue-bg);color:var(--blue);}
+.item-body{flex:1;min-width:0;}
+.item-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:2px;}
+.item-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.chk{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.chk.done{background:var(--green);border-color:var(--green);}
+.chk.done::after{content:'✓';color:#fff;font-size:11px;font-weight:600;}
+.field{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);font-family:var(--sans);font-size:12px;color:var(--text);resize:vertical;outline:none;line-height:1.6;transition:border-color .12s;}
+.field:focus{border-color:var(--border2);background:var(--surface);}
+.field::placeholder{color:var(--text3);}
+/* IA BOX */
+.ia-box{background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:var(--r);padding:14px;margin-top:12px;}
+.ia-label{font-size:10px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.ia-output{font-size:12px;color:var(--text2);line-height:1.7;min-height:40px;white-space:pre-wrap;}
+.ia-output.loading{color:var(--text3);font-style:italic;}
+/* AUDIO BOX */
+.audio-box{background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:var(--r);padding:14px;margin-top:12px;}
+.audio-label{font-size:10px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.audio-hint{font-size:11px;color:var(--blue);opacity:.85;margin-bottom:8px;line-height:1.5;}
+.audio-output{font-size:11px;color:var(--text2);line-height:1.6;padding:8px 10px;background:rgba(255,255,255,.55);border-radius:var(--rs);margin-top:8px;white-space:pre-wrap;}
+/* NOTAS */
+.notas-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:12px;}
+.notas-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.notas-title{font-size:11px;font-weight:600;color:var(--text2);}
+.nota-item{display:flex;gap:10px;align-items:flex-start;padding:9px 13px;border-bottom:1px solid var(--border);}
+.nota-item:last-child{border-bottom:none;}
+.nota-meta{flex-shrink:0;text-align:right;min-width:44px;}
+.nota-hora{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.nota-dia{font-size:10px;color:var(--text3);}
+.nota-tipo{font-size:9px;font-weight:600;padding:1px 6px;border-radius:8px;border:1px solid;margin-top:3px;display:inline-block;}
+.nt-texto{background:var(--surface2);color:var(--text2);border-color:var(--border);}
+.nt-audio{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b);}
+.nt-ia{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b);}
+.nota-body{flex:1;font-size:12px;color:var(--text2);line-height:1.5;}
+.nota-del{cursor:pointer;color:var(--text3);font-size:14px;padding:0 3px;flex-shrink:0;}
+.nota-del:hover{color:var(--red);}
+.nota-add-row{display:flex;gap:8px;padding:9px 13px;background:var(--surface2);align-items:flex-start;}
+.nota-empty{padding:18px;text-align:center;font-size:11px;color:var(--text3);}
+/* PROMPT */
+.prompt-chip{font-family:var(--mono);font-size:11px;color:var(--purple);background:rgba(255,255,255,.6);border-radius:var(--rs);padding:10px 12px;line-height:1.7;margin-top:8px;cursor:pointer;border:1px solid var(--purple-b);transition:background .1s;}
+.prompt-chip:hover{background:rgba(255,255,255,.9);}
+.prompt-chip-label{font-size:10px;color:var(--purple);font-family:var(--sans);font-weight:500;margin-bottom:4px;opacity:.7;}
+/* EMP */
+.emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.emp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.emp-name{font-size:12px;font-weight:600;margin-bottom:4px;}
+.emp-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;border:1px solid;display:inline-block;margin-bottom:8px;}
+.emp-field{border-top:1px solid var(--border);padding-top:8px;margin-top:4px;}
+/* HISTORIAL */
+.hist-item{padding:12px 14px;border-bottom:1px solid var(--border);}
+.hist-item:last-child{border-bottom:none;}
+.hist-date{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;}
+.hist-content{font-size:12px;color:var(--text2);line-height:1.6;}
+/* DIVIDER */
+.divider-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:8px;margin:16px 0 10px;}
+.divider-lbl::before,.divider-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+.empty{text-align:center;padding:28px 20px;color:var(--text3);font-size:12px;}
+.empty-icon{font-size:26px;margin-bottom:8px;}
+.footer{background:var(--surface);border-top:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:fixed;bottom:0;left:0;right:0;flex-wrap:wrap;z-index:100;}
+.footer-status{font-size:11px;color:var(--text3);}
+.footer-actions{display:flex;gap:8px;}
+@media(max-width:560px){.emp-grid{grid-template-columns:1fr;}.topbar-right{gap:6px;}}
+</style>
+</head>
+<body>
+<div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="logo">G</div>
+    <div><div class="topbar-title">Bríefing diario persistente</div><div class="topbar-sub" id="topbar-sub">Cargando...</div></div>
+  </div>
+  <div class="topbar-right">
+    <div class="date-chip" id="date-chip"></div>
+    <button class="btn" onclick="mostrarConfigSync_B()" style="padding:6px 10px;">⚙ Sync</button>
+    <button class="btn btn-ia" onclick="generarConIA()">✦ Generar con IA</button>
+    <button class="btn btn-primary" onclick="guardarDia()">Guardar</button>
+  </div>
+</header>
+<nav class="tabs">
+  <div class="tab active" onclick="showPanel('arranque')">Arranque 7:30</div>
+  <div class="tab" onclick="showPanel('agenda')">Agenda</div>
+  <div class="tab" onclick="showPanel('decisiones')">Decisiones</div>
+  <div class="tab" onclick="showPanel('emprendimientos')">Emprendimientos</div>
+  <div class="tab" onclick="showPanel('junta')">🏢 Junta / Asesoría</div>
+  <div class="tab" onclick="showPanel('cierre')">Cierre 18:30</div>
+  <div class="tab" onclick="showPanel('historial')">Historial</div>
+</nav>
+<main class="main">
+
+<!-- ARRANQUE -->
+<div class="panel active" id="panel-arranque">
+  <div class="day-card">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="day-circle"><span class="dn" id="dn"></span><span class="dm" id="dm"></span></div>
+      <div><div class="day-name" id="day-name"></div><div class="day-week" id="day-week"></div></div>
+    </div>
+    <div class="pills">
+      <span class="pill pill-red" id="pill-urg">0 urgentes</span>
+      <span class="pill pill-blue" id="pill-reu">0 reuniones</span>
+      <span class="pill pill-amber" id="pill-dec">0 decisiones</span>
+      <span class="pill pill-green" id="pill-chk">0/0 tareas</span>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-red">⚡</div><span class="sec-title">Prioridad #1 del día</span></div>
+    <div class="card" style="padding:12px;">
+      <textarea class="field" id="prioridad1" rows="2" placeholder="¿Cuál es lo más importante que debe ocurrir hoy?"></textarea>
+      <textarea class="field" id="razon1" rows="1" style="margin-top:6px;" placeholder="¿Por qué es la #1 hoy?"></textarea>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-green">📤</div><span class="sec-title">Instrucción para asistente EICE</span></div>
+    <div class="card" style="padding:12px;">
+      <textarea class="field" id="inst-asistente" rows="2" placeholder="Ej: Filtra correos. Responde los rutinarios. Tráeme solo los que requieren mi decisión antes de las 10am."></textarea>
+    </div>
+  </div>
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar arranque desde audio o texto libre</div>
+    <div class="audio-hint">Pega la transcripción de tu nota de voz del inicio del día. La IA extrae la prioridad del día, la instrucción para el asistente y los pendientes clasificados.</div>
+    <textarea class="field" id="arranque-audio-raw" rows="3" placeholder="Ej: Hoy lo más urgente es la coordinación de los 16 convenios del 22 de junio. El área jurídica me pidió confirmación del presupuesto. También llegó un correo del cliente de Consultoría IA sobre la reunión de las 11..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('arranque')">✦ Actualizar campos con IA</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('arranque','audio',document.getElementById('arranque-audio-raw').value);document.getElementById('arranque-audio-raw').value=''">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="arranque-audio-output" style="display:none;"></div>
+  </div>
+  <div class="sec" style="margin-top:12px;">
+    <div class="sec-head"><div class="sec-icon si-purple">✦</div><span class="sec-title">Pendientes en texto libre — clasifico con IA</span></div>
+    <div class="card" style="padding:12px;">
+      <textarea class="field" id="pendientes-raw" rows="3" placeholder="Escribe o pega aquí tus pendientes del día sin estructura. Luego haz clic en '✦ Generar con IA'."></textarea>
+    </div>
+  </div>
+  <div class="ia-box" id="ia-arranque-box" style="display:none;">
+    <div class="ia-label">✦ Clasificación generada por IA</div>
+    <div class="ia-output" id="ia-arranque-output"></div>
+  </div>
+  <div style="margin-top:12px;">
+    <div class="ia-box">
+      <div class="ia-label">✦ Prompt de arranque — copia y pega en el Proyecto EICE de Claude</div>
+      <div class="prompt-chip-label" style="font-size:10px;color:var(--purple);margin-bottom:4px;opacity:.7;">Toca para copiar</div>
+      <div class="prompt-chip" id="prompt-arranque" onclick="copiarPrompt('prompt-arranque')"></div>
+    </div>
+  </div>
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas del arranque</span>
+      <span style="font-size:10px;color:var(--text3);" id="arranque-notas-count">0 notas</span>
+    </div>
+    <div id="arranque-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="arranque-nota-nueva" rows="1" placeholder="Nota rápida del inicio del día... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('arranque','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('arranque-nota-nueva').value.trim();if(v){agregarNotaPanel('arranque','texto',v);document.getElementById('arranque-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGENDA -->
+<div class="panel" id="panel-agenda">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-amber">📋</div><span class="sec-title">Reuniones del día</span></div>
+    <div class="card" id="agenda-lista"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px;">
+    <input type="text" id="nueva-hora" class="field" style="width:80px;height:36px;resize:none;" placeholder="8:30">
+    <input type="text" id="nueva-reunion" class="field" style="flex:1;height:36px;resize:none;" placeholder="Descripción de la reunión...">
+    <button class="btn" onclick="agregarReunion()">Añadir</button>
+  </div>
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar agenda desde audio</div>
+    <div class="audio-hint">Pega la transcripción de tu nota de voz con las reuniones del día. La IA las extrae y organiza por hora.</div>
+    <textarea class="field" id="agenda-audio-raw" rows="3" placeholder="Ej: Hoy tengo a las 9 el comité con el área jurídica, a las 11 la reunión con el cliente de Consultoría IA, al mediodía un almuerzo de trabajo con el proveedor de equipos, y a las 4 el bloque de Red EV con los socios..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('agenda')">✦ Extraer reuniones con IA</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('agenda','audio',document.getElementById('agenda-audio-raw').value);document.getElementById('agenda-audio-raw').value=''">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="agenda-audio-output" style="display:none;"></div>
+  </div>
+  <div class="divider-lbl">preparar reunión con IA</div>
+  <div class="ia-box">
+    <div class="ia-label">✦ Bríefing para una reunión específica</div>
+    <textarea class="field" id="reunion-contexto" rows="2" placeholder="Ej: Reunión con cliente de Consultoría IA. Es el tercer encuentro. Piloto avanzando al 60%..."></textarea>
+    <button class="btn btn-ia" style="margin-top:8px;" onclick="prepararReunion()">Preparar reunión</button>
+    <div class="ia-output" id="ia-reunion-output" style="margin-top:10px;display:none;"></div>
+    <div class="prompt-chip" id="prompt-reunion" style="margin-top:8px;" onclick="copiarPrompt('prompt-reunion')"></div>
+  </div>
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de reuniones</span>
+      <span style="font-size:10px;color:var(--text3);" id="agenda-notas-count">0 notas</span>
+    </div>
+    <div id="agenda-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="agenda-nota-nueva" rows="1" placeholder="Nota de reunión: acuerdo, pendiente, insight... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('agenda','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('agenda-nota-nueva').value.trim();if(v){agregarNotaPanel('agenda','texto',v);document.getElementById('agenda-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- DECISIONES -->
+<div class="panel" id="panel-decisiones">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-blue">🧩</div><span class="sec-title">Decisiones que requieren mi criterio</span></div>
+    <div class="card" id="decisiones-lista"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input type="text" id="nueva-decision" class="field" style="flex:1;height:36px;resize:none;" placeholder="Añadir decisión pendiente...">
+      <select id="dec-tipo" class="field" style="width:110px;height:36px;resize:none;">
+        <option value="red">🔴 Urgente</option>
+        <option value="amber">🟡 Esta semana</option>
+        <option value="blue">🔵 Puede esperar</option>
+      </select>
+      <button class="btn" onclick="agregarDecision()">Añadir</button>
+    </div>
+  </div>
+  <div class="audio-box">
+    <div class="audio-label">🎙 Extraer decisiones desde audio o acta</div>
+    <div class="audio-hint">Pega la transcripción de tu audio o el texto de un acta. La IA extrae las decisiones que requieren tu criterio y las que puedes delegar.</div>
+    <textarea class="field" id="decisiones-audio-raw" rows="4" placeholder="Pega aquí el texto del acta, correo o audio transcrito. Extraeré: decisiones que requieren tu criterio, compromisos adquiridos con responsable y fecha, pendientes delegables."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('decisiones')">✦ Extraer decisiones con IA</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('decisiones','audio',document.getElementById('decisiones-audio-raw').value);document.getElementById('decisiones-audio-raw').value=''">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="decisiones-audio-output" style="display:none;"></div>
+  </div>
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de decisiones</span>
+      <span style="font-size:10px;color:var(--text3);" id="decisiones-notas-count">0 notas</span>
+    </div>
+    <div id="decisiones-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="decisiones-nota-nueva" rows="1" placeholder="Nota rápida: contexto de una decisión, argumento, restricción... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('decisiones','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('decisiones-nota-nueva').value.trim();if(v){agregarNotaPanel('decisiones','texto',v);document.getElementById('decisiones-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMPRENDIMIENTOS -->
+<div class="panel" id="panel-emprendimientos">
+  <div class="emp-grid">
+    <div class="emp-card">
+      <div class="emp-name" style="color:var(--amber)">Red EV</div>
+      <span class="emp-badge" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b);">Lun / Mié 16:00</span>
+      <div class="emp-field">
+        <textarea class="field" id="ev-instruccion" rows="3" placeholder="Instrucción para socios esta semana..."></textarea>
+        <textarea class="field" id="ev-estado" rows="2" style="margin-top:6px;" placeholder="Estado actual / último avance..."></textarea>
+      </div>
+    </div>
+    <div class="emp-card">
+      <div class="emp-name" style="color:var(--green)">Consultoría IA</div>
+      <span class="emp-badge" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b);">Mar / Jue 16:00</span>
+      <div class="emp-field">
+        <textarea class="field" id="cons-instruccion" rows="3" placeholder="Instrucción para el equipo (ingeniero, abogada, comercial, experta)..."></textarea>
+        <textarea class="field" id="cons-estado" rows="2" style="margin-top:6px;" placeholder="Estado de los 3 clientes piloto..."></textarea>
+      </div>
+    </div>
+    <div class="emp-card">
+      <div class="emp-name" style="color:var(--purple)">Frutas temporada</div>
+      <span class="emp-badge" style="background:var(--purple-bg);color:var(--purple);border-color:var(--purple-b);">Vie 16:00</span>
+      <div class="emp-field">
+        <textarea class="field" id="frutas-instruccion" rows="3" placeholder="Instrucción para equipo/socio..."></textarea>
+        <textarea class="field" id="frutas-estado" rows="2" style="margin-top:6px;" placeholder="Hito actual / próximo paso..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar emprendimientos desde audio</div>
+    <div class="audio-hint">Pega aquí la transcripción de tu nota de voz sobre cualquier emprendimiento. La IA identifica de cuál hablas y actualiza las instrucciones y el estado correspondiente.</div>
+    <textarea class="field" id="emp-audio-raw" rows="3" placeholder="Ej: Los socios de Red EV cerraron el cliente de Itagüí hoy, 3 estaciones por 18 meses. El equipo de Consultoría IA tuvo reunión con el cliente 2 y van bien. En Frutas el socio mostró los primeros bocetos del empaque..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('emprendimientos')">✦ Actualizar emprendimientos con IA</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('emprendimientos','audio',document.getElementById('emp-audio-raw').value);document.getElementById('emp-audio-raw').value=''">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="emprendimientos-audio-output" style="display:none;"></div>
+  </div>
+  <div class="divider-lbl">junta / asesoría</div>
+  <div class="card" style="padding:12px;">
+    <textarea class="field" id="junta-pendientes" rows="3" placeholder="Pendientes de la empresa de gestión de proyectos que requieren tu criterio como asesor de junta..."></textarea>
+  </div>
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de emprendimientos y junta</span>
+      <span style="font-size:10px;color:var(--text3);" id="emprendimientos-notas-count">0 notas</span>
+    </div>
+    <div id="emprendimientos-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="emprendimientos-nota-nueva" rows="1" placeholder="Nota rápida: avance, decisión, contacto, idea... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('emprendimientos','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('emprendimientos-nota-nueva').value.trim();if(v){agregarNotaPanel('emprendimientos','texto',v);document.getElementById('emprendimientos-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- CIERRE -->
+<div class="panel" id="panel-cierre">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-blue">📝</div><span class="sec-title">Síntesis del día</span></div>
+    <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Decisiones tomadas hoy</div>
+        <textarea class="field" id="sint-decisiones" rows="2" placeholder="Ej: Aprobé contrato X. Rechacé propuesta Y. Firmé acuerdo con municipio Z..."></textarea>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Compromisos adquiridos (quién, qué, cuándo)</div>
+        <textarea class="field" id="sint-compromisos" rows="2" placeholder="Ej: Equipo EV entrega modelo financiero el miércoles..."></textarea>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Señal importante del día</div>
+        <textarea class="field" id="sint-senal" rows="1" placeholder="Algo inesperado, una oportunidad o riesgo que emergió hoy..."></textarea>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Pendientes para mañana</div>
+        <textarea class="field" id="sint-manana" rows="2" placeholder="Lo que no cerró hoy y va al arranque de mañana..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="audio-box">
+    <div class="audio-label">🎙 Generar síntesis desde audio o acta del día</div>
+    <div class="audio-hint">Pega la transcripción de tu audio de cierre o las actas del día. La IA genera la síntesis completa y el bríefing de mañana automáticamente.</div>
+    <textarea class="field" id="cierre-audio" rows="4" placeholder="Pega aquí la transcripción de tu audio de cierre o las actas del día..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="generarCierre()">✦ Generar síntesis y bríefing de mañana</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('cierre','audio',document.getElementById('cierre-audio').value);document.getElementById('cierre-audio').value=''">Guardar como nota</button>
+    </div>
+    <div class="ia-output" id="ia-cierre-output" style="margin-top:10px;display:none;"></div>
+  </div>
+  <div style="margin-top:12px;">
+    <div class="ia-box">
+      <div class="ia-label">✦ Prompt de cierre — para pegar en Claude</div>
+      <div class="prompt-chip" id="prompt-cierre" onclick="copiarPrompt('prompt-cierre')"></div>
+    </div>
+  </div>
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas del cierre</span>
+      <span style="font-size:10px;color:var(--text3);" id="cierre-notas-count">0 notas</span>
+    </div>
+    <div id="cierre-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="cierre-nota-nueva" rows="1" placeholder="Nota de cierre: reflexión, pendiente urgente, idea... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('cierre','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('cierre-nota-nueva').value.trim();if(v){agregarNotaPanel('cierre','texto',v);document.getElementById('cierre-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- JUNTA / ASESORÍA -->
+<div class="panel" id="panel-junta">
+
+  <div class="day-card" style="background:var(--coral-bg);border-color:var(--coral-b);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="day-circle" style="background:var(--coral);">
+        <span class="dn" style="font-size:14px;">🏢</span>
+      </div>
+      <div>
+        <div class="day-name">Empresa de gestión de proyectos</div>
+        <div class="day-week" style="color:var(--coral);">Asesor junta directiva · Mar y Jue 12:00 · Gmail + Google Drive</div>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill" style="background:var(--coral-bg);color:var(--coral);border-color:var(--coral-b);" id="junta-pill-hoy">Cargando día...</span>
+      <span class="pill" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b);" id="junta-pill-reunion">Sin reunión hoy</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon" style="background:var(--coral-bg);color:var(--coral);">📊</div><span class="sec-title">Estado de proyectos activos</span></div>
+    <div class="card">
+      <div style="padding:10px 13px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Proyectos públicos y público-privados</div>
+        <textarea class="field" id="junta-proyectos-publicos" rows="3" placeholder="Ej: Proyecto urbanización Sector Norte — pendiente aprobación Concejo. Convenio con municipio X — en etapa de estructuración financiera..."></textarea>
+      </div>
+      <div style="padding:10px 13px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Proyectos inmobiliarios</div>
+        <textarea class="field" id="junta-proyectos-inmobiliarios" rows="3" placeholder="Ej: Lote de protección — escrituración pendiente (URGENTE). Proyecto vivienda VIS — en preventa. Fideicomiso Z — revisión de actas..."></textarea>
+      </div>
+      <div style="padding:10px 13px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Estado financiero de la empresa</div>
+        <textarea class="field" id="junta-financiero" rows="2" placeholder="Flujo de caja, compromisos financieros pendientes, indicadores clave que debo revisar..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon" style="background:var(--coral-bg);color:var(--coral);">⚖️</div><span class="sec-title">Gobierno corporativo y decisiones estratégicas</span></div>
+    <div class="card">
+      <div style="padding:10px 13px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Decisión estratégica pendiente que requiere mi criterio como asesor</div>
+        <textarea class="field" id="junta-decision-estrategica" rows="2" placeholder="Ej: La junta debe decidir si entrar al nuevo proyecto de vivienda en Sabaneta antes del 30 de junio. Factores: riesgo financiero, capacidad operativa del equipo, mercado..."></textarea>
+      </div>
+      <div style="padding:10px 13px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Posición que llevaré como asesor en la próxima reunión</div>
+        <textarea class="field" id="junta-posicion" rows="2" placeholder="Mi recomendación como asesor, argumentos que sostienen esa posición, riesgos que debo mencionar..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon" style="background:var(--coral-bg);color:var(--coral);">📅</div><span class="sec-title">Preparación de reunión — martes o jueves 12:00</span></div>
+    <div class="card" style="padding:12px;">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Agenda de la reunión de hoy (si aplica)</div>
+      <textarea class="field" id="junta-agenda-reunion" rows="2" placeholder="Temas a tratar, documentos a revisar, decisiones a tomar en la reunión de hoy..."></textarea>
+      <button class="btn btn-ia" style="margin-top:8px;" onclick="prepararReunionJunta()">✦ Preparar bríefing de reunión con IA</button>
+      <div class="ia-output" id="ia-junta-reunion" style="margin-top:10px;display:none;"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon" style="background:var(--coral-bg);color:var(--coral);">🔴</div><span class="sec-title">Alertas y seguimientos urgentes</span></div>
+    <div class="card" style="padding:12px;">
+      <textarea class="field" id="junta-alertas" rows="3" placeholder="Ej: Escrituración lote protección — vence plazo notarial el viernes. Proveedor Z no ha entregado informe. Socio X solicita revisión de contrato urgente..."></textarea>
+    </div>
+  </div>
+
+  <div class="audio-box">
+    <div class="audio-label">🎙 Actualizar junta desde audio o texto libre</div>
+    <div class="audio-hint">Pega aquí la transcripción de tu nota de voz sobre la empresa de gestión. La IA identifica proyectos, decisiones, alertas y las actualiza en los campos correspondientes.</div>
+    <textarea class="field" id="junta-audio-raw" rows="3" placeholder="Ej: En la reunión de hoy revisamos el proyecto de escrituración del lote de protección, hay un problema con el notario que necesita resolver antes del viernes. También discutimos la posibilidad de entrar al proyecto VIS de Sabaneta..."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-ia" onclick="actualizarDesdeAudio('junta')">✦ Actualizar campos con IA</button>
+      <button class="btn btn-blue" onclick="agregarNotaPanel('junta','audio',document.getElementById('junta-audio-raw').value);document.getElementById('junta-audio-raw').value=''">Guardar como nota</button>
+    </div>
+    <div class="audio-output" id="junta-audio-output" style="display:none;"></div>
+  </div>
+
+  <div class="ia-box">
+    <div class="ia-label">✦ Análisis de la junta con IA — genera recomendación de asesor</div>
+    <button class="btn btn-ia" onclick="analizarJunta()">✦ Analizar situación y generar posición como asesor</button>
+    <div class="ia-output" id="ia-junta-analisis" style="margin-top:10px;display:none;"></div>
+  </div>
+
+  <div class="notas-box">
+    <div class="notas-header">
+      <span class="notas-title">📝 Notas de junta / asesoría</span>
+      <span style="font-size:10px;color:var(--text3);" id="junta-notas-count">0 notas</span>
+    </div>
+    <div id="junta-notas-lista"><div class="nota-empty">Sin notas aún.</div></div>
+    <div class="nota-add-row">
+      <textarea class="field" id="junta-nota-nueva" rows="1" placeholder="Nota rápida: acuerdo de reunión, dato de proyecto, instrucción del directorio... (Enter para guardar)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();var v=this.value.trim();if(v){agregarNotaPanel('junta','texto',v);this.value=''}}"></textarea>
+      <button class="btn" style="height:36px;flex-shrink:0;" onclick="var v=document.getElementById('junta-nota-nueva').value.trim();if(v){agregarNotaPanel('junta','texto',v);document.getElementById('junta-nota-nueva').value=''}">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="panel" id="panel-historial">
+  <div class="sec">
+    <div class="sec-head"><div class="sec-icon si-coral">🗂</div><span class="sec-title">Historial de días guardados</span></div>
+    <div class="card" id="historial-lista"><div class="empty"><div class="empty-icon">📅</div>Aún no hay días guardados.</div></div>
+  </div>
+  <button class="btn" style="margin-top:10px;color:var(--red);border-color:var(--red-b);" onclick="limpiarHistorial()">Borrar historial</button>
+</div>
+
+</main>
+<footer class="footer">
+  <div class="footer-status" id="footer-status">Bríefing vacío — completa las secciones clave</div>
+  <div class="footer-actions">
+    <button class="btn" onclick="nuevodia()">Nuevo día</button>
+    <button class="btn btn-ia" onclick="generarConIA()">✦ IA</button>
+    <button class="btn btn-primary" onclick="guardarDia()">Guardar</button>
+  </div>
+</footer>
+
+<script>
+
+// ============================================================
+// SINCRONIZACIÓN GOOGLE SHEETS — briefing
+// ============================================================
+const URL_SYNC_KEY_B = '_sistema_ia_script_url';
+const SCRIPT_URL_DEFAULT_B = 'https://script.google.com/macros/s/AKfycbxi-H3mbSszJsdpMXQKNEWZ8vi-0W_LdO7W6qonsgoiw04BPMw8p8eQw0_4qu6zCtlu/exec';
+function getScriptUrl_B(){ return localStorage.getItem(URL_SYNC_KEY_B)||SCRIPT_URL_DEFAULT_B; }
+
+async function syncSave_B(clave, valor){
+  const url=getScriptUrl_B(); if(!url) return false;
+  try{
+    await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({artefacto:'briefing',clave,valor:typeof valor==='string'?valor:JSON.stringify(valor)})});
+    return true;
+  }catch(e){ return false; }
+}
+
+async function syncLoad_B(clave){
+  const url=getScriptUrl_B(); if(!url) return null;
+  try{
+    const r=await fetch(`${url}?${new URLSearchParams({artefacto:'briefing',clave})}`);
+    const d=await r.json();
+    if(d.ok && d.data!==null && d.data!==undefined) return d.data;
+  }catch(e){}
+  return null;
+}
+
+function mostrarStatusSync_B(ok){
+  let el=document.getElementById('sync-bar-B');
+  if(!el){ el=document.createElement('div'); el.id='sync-bar-B';
+    el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:10px;padding:3px;z-index:200;transition:opacity .5s;';
+    document.body.appendChild(el); }
+  el.textContent=ok?'✓ Sincronizado con Google Sheets':'⚠ Guardado solo local';
+  el.style.background=ok?'#EAF5EE':'#FDF3E0';
+  el.style.color=ok?'#1A7A3C':'#9A6400';
+  el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0',2500);
+}
+
+function mostrarConfigSync_B(){
+  const ex=document.getElementById('sync-cfg-B');
+  if(ex){ ex.remove(); return; }
+  const url=getScriptUrl_B();
+  const ov=document.createElement('div');
+  ov.id='sync-cfg-B';
+  ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML=`
+    <div style="background:#fff;border-radius:12px;padding:20px;width:100%;max-width:500px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Sincronización — briefing</div>
+      <div style="font-size:12px;color:#5C5A54;margin-bottom:14px;">Pega tu URL de Google Apps Script para sincronizar entre dispositivos.</div>
+      <input id="sync-inp-B" type="url" value="${url}" placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%;padding:10px;border:1px solid #C8C3B8;border-radius:6px;font-size:12px;font-family:monospace;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="guardarSyncUrl_B()" style="background:#1A1915;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Guardar y verificar</button>
+        <button onclick="document.getElementById('sync-cfg-B').remove()" style="background:#F0EEE9;border:1px solid #C8C3B8;padding:8px 16px;border-radius:6px;font-size:12px;cursor:pointer;">Cerrar</button>
+      </div>
+      <div id="sync-res-B" style="margin-top:10px;font-size:11px;"></div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+async function guardarSyncUrl_B(){
+  const url=document.getElementById('sync-inp-B').value.trim();
+  const res=document.getElementById('sync-res-B');
+  if(!url){ res.textContent='URL inválida.'; return; }
+  localStorage.setItem(URL_SYNC_KEY_B, url);
+  res.textContent='Verificando...'; res.style.color='#9A6400';
+  try{
+    const r=await fetch(`${url}?${new URLSearchParams({artefacto:'ping',clave:'test'})}`);
+    const d=await r.json();
+    if(d.ok!==false){
+      res.textContent='✓ Conexión exitosa.'; res.style.color='#1A7A3C';
+      localStorage.setItem('_sistema_ia_last_sync',new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
+      setTimeout(()=>document.getElementById('sync-cfg-B')?.remove(),1500);
+    } else throw new Error();
+  }catch(e){ res.textContent='No se pudo conectar. Verifica la URL.'; res.style.color='#B02A2A'; }
+}
+// ============================================================
+// ---- CONSTANTES Y ESTADO GLOBAL ----
+const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MESES  = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const MESESL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const EMP_HOY = {1:'Red EV',2:'Consultoría IA',3:'Red EV',4:'Consultoría IA',5:'Frutas temporada',6:'',0:''};
+const KEY = 'briefing_v4_';
+const PANELES = ['arranque','agenda','decisiones','emprendimientos','junta','cierre'];
+const notasDB = { arranque:[], agenda:[], decisiones:[], emprendimientos:[], junta:[], cierre:[] };
+let reuniones = [];
+let decisionesLista = [];
+function g(id){ const e=document.getElementById(id); return e?e.value:''; }
+function s(id,v){ const e=document.getElementById(id); if(e&&v!==undefined&&v!==null) e.value=v; }
+
+// ---- INIT ----
+async function init(){
+  const hoy=new Date(), d=hoy.getDay(), n=hoy.getDate(), m=hoy.getMonth(), y=hoy.getFullYear();
+  document.getElementById('dn').textContent=n;
+  document.getElementById('dm').textContent=MESES[m];
+  document.getElementById('day-name').textContent=DIAS[d]+' · '+n+' de '+MESESL[m];
+  document.getElementById('day-week').textContent='Semana '+Math.ceil(n/7)+' · '+y;
+  document.getElementById('date-chip').textContent=DIAS[d]+' '+n+'/'+(m+1)+'/'+y;
+  document.getElementById('topbar-sub').textContent='Gerencia General · '+DIAS[d];
+  actualizarPrompts(d,n,m,y);
+  // Pill de junta según día
+  const esDiaJunta = d===2||d===4; // martes o jueves
+  const pillHoy = document.getElementById('junta-pill-hoy');
+  const pillReu = document.getElementById('junta-pill-reunion');
+  if(pillHoy) pillHoy.textContent = DIAS[d];
+  if(pillReu) pillReu.textContent = esDiaJunta ? '📅 Reunión hoy 12:00' : 'Sin reunión hoy';
+  if(pillReu && esDiaJunta) { pillReu.style.background='var(--coral-bg)'; pillReu.style.color='var(--coral)'; pillReu.style.borderColor='var(--coral-b)'; }
+  await cargarDia();
+  renderHistorial();
+  updateStats();
+  setInterval(guardarDia,30000);
+}
+
+// ---- TABS ----
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ---- PROMPTS ----
+function actualizarPrompts(d,n,m,y){
+  const emp=EMP_HOY[d]||'ninguno programado';
+  const fecha=DIAS[d]+' '+n+' de '+MESESL[m]+' de '+y;
+  document.getElementById('prompt-arranque').textContent=
+`Soy Gerente General de una EICE en Colombia. Hoy es ${fecha}.
+Mi agenda tiene: [REUNIONES DEL DÍA].
+Mensajes urgentes: [RESUMEN CORREOS Y WHATSAPP].
+Emprendimiento del bloque de hoy (16:00): ${emp}.
+Dame:
+1) Mi prioridad #1 del día con justificación
+2) Qué decisiones requieren mi criterio vs. qué puedo delegar
+3) Instrucción concreta para cada equipo de emprendimiento
+4) Pregunta clave para llevar a la primera reunión`;
+  document.getElementById('prompt-cierre').textContent=
+`Cierre del día ${fecha}.
+Decisiones tomadas: [CAMPO].
+Compromisos: [CAMPO].
+Señal del día: [CAMPO].
+Pendientes mañana: [CAMPO].
+Genera:
+1) Acta ejecutiva del día en máximo 6 líneas
+2) Instrucciones para equipos de emprendimientos para mañana
+3) Bríefing del día siguiente listo para el arranque de las 7:30am`;
+  document.getElementById('prompt-reunion').textContent=
+`Tengo reunión en 30 minutos. Contexto: [PEGA TU CONTEXTO].
+Dame:
+1) 3 puntos clave que debo tener claros antes de entrar
+2) Una pregunta que debo hacerle al interlocutor
+3) El resultado ideal de esta reunión en una línea
+4) Mensaje de cierre que deje compromisos claros`;
+}
+
+// ---- REUNIONES ----
+function agregarReunion(){
+  const hora=g('nueva-hora'), desc=g('nueva-reunion');
+  if(!desc.trim()) return;
+  reuniones.push({hora:hora||'--:--',desc,done:false});
+  document.getElementById('nueva-hora').value='';
+  document.getElementById('nueva-reunion').value='';
+  renderReuniones(); updateStats();
+}
+function renderReuniones(){
+  const lista=document.getElementById('agenda-lista');
+  if(!reuniones.length){ lista.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Sin reuniones. Añade las de hoy abajo.</div>'; return; }
+  lista.innerHTML=reuniones.map((r,i)=>`
+    <div class="item">
+      <div class="item-num in-amber" style="font-size:9px;font-family:var(--mono)">${r.hora}</div>
+      <div class="item-body"><div class="item-title">${r.desc}</div></div>
+      <div class="chk ${r.done?'done':''}" onclick="toggleR(${i})"></div>
+    </div>`).join('');
+}
+function toggleR(i){ reuniones[i].done=!reuniones[i].done; renderReuniones(); updateStats(); }
+
+// ---- DECISIONES ----
+function agregarDecision(){
+  const texto=g('nueva-decision'), tipo=g('dec-tipo');
+  if(!texto.trim()) return;
+  decisionesLista.push({texto,tipo,done:false});
+  document.getElementById('nueva-decision').value='';
+  renderDecisiones(); updateStats();
+}
+function renderDecisiones(){
+  const lista=document.getElementById('decisiones-lista');
+  if(!decisionesLista.length){ lista.innerHTML='<div class="empty"><div class="empty-icon">🧩</div>Sin decisiones. Añade las que requieren tu criterio.</div>'; return; }
+  const cols={red:'in-red',amber:'in-amber',blue:'in-blue'};
+  lista.innerHTML=decisionesLista.map((d,i)=>`
+    <div class="item">
+      <div class="item-num ${cols[d.tipo]||'in-blue'}">${i+1}</div>
+      <div class="item-body"><div class="item-title">${d.texto}</div></div>
+      <div class="chk ${d.done?'done':''}" onclick="toggleD(${i})"></div>
+    </div>`).join('');
+}
+function toggleD(i){ decisionesLista[i].done=!decisionesLista[i].done; renderDecisiones(); updateStats(); }
+
+// ---- STATS ----
+function updateStats(){
+  const campos=['prioridad1','razon1','inst-asistente','sint-decisiones','sint-compromisos','sint-senal','sint-manana'];
+  const llenos=campos.filter(id=>{ const e=document.getElementById(id); return e&&e.value.trim(); }).length;
+  const urg=g('prioridad1').trim()?1:0;
+  const allChk=document.querySelectorAll('.chk');
+  const doneChk=document.querySelectorAll('.chk.done');
+  document.getElementById('pill-urg').textContent=urg+' urgente'+(urg!==1?'s':'');
+  document.getElementById('pill-reu').textContent=reuniones.length+' reunión'+(reuniones.length!==1?'es':'');
+  document.getElementById('pill-dec').textContent=decisionesLista.length+' decisión'+(decisionesLista.length!==1?'es':'');
+  document.getElementById('pill-chk').textContent=doneChk.length+'/'+allChk.length+' tareas';
+  const pct=allChk.length?Math.round(doneChk.length/allChk.length*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('footer-status').textContent=
+    llenos===0?'Bríefing vacío — completa las secciones clave':
+    llenos<4?`En progreso — ${llenos} de ${campos.length} secciones`:
+    'Bríefing completo ✓ — listo para arrancar';
+}
+
+// ---- NOTAS POR PANEL ----
+function agregarNotaPanel(panel, tipo, texto){
+  if(!texto||!texto.trim()) return;
+  const ahora=new Date();
+  const DC=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  notasDB[panel].push({
+    id:Date.now(), tipo, texto:texto.trim(),
+    dia:DC[ahora.getDay()],
+    hora:ahora.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
+    ts:ahora.toISOString()
+  });
+  renderNotas(panel);
+  guardarDia();
+}
+function renderNotas(panel){
+  const lista=document.getElementById(panel+'-notas-lista');
+  const count=document.getElementById(panel+'-notas-count');
+  const notas=notasDB[panel];
+  if(count) count.textContent=notas.length+(notas.length===1?' nota':' notas');
+  if(!lista) return;
+  if(!notas.length){ lista.innerHTML='<div class="nota-empty">Sin notas aún.</div>'; return; }
+  lista.innerHTML=notas.slice().reverse().map(n=>`
+    <div class="nota-item">
+      <div class="nota-meta">
+        <div class="nota-hora">${n.hora}</div>
+        <div class="nota-dia">${n.dia}</div>
+        <span class="nota-tipo nt-${n.tipo}">${n.tipo==='texto'?'nota':n.tipo}</span>
+      </div>
+      <div class="nota-body">${n.texto}</div>
+      <span class="nota-del" onclick="eliminarNota('${panel}',${n.id})" title="Eliminar">×</span>
+    </div>`).join('');
+}
+function eliminarNota(panel,id){
+  notasDB[panel]=notasDB[panel].filter(n=>n.id!==id);
+  renderNotas(panel);
+  guardarDia();
+}
+
+// ---- PERSISTENCIA ----
+function getDayKey(){ const h=new Date(); return KEY+h.getFullYear()+'-'+(h.getMonth()+1)+'-'+h.getDate(); }
+async function guardarDia(){
+  const data={
+    ts:new Date().toISOString(),
+    prioridad1:g('prioridad1'), razon1:g('razon1'),
+    inst_asistente:g('inst-asistente'), pendientes_raw:g('pendientes-raw'),
+    reuniones:JSON.stringify(reuniones), decisiones:JSON.stringify(decisionesLista),
+    ev_instruccion:g('ev-instruccion'), ev_estado:g('ev-estado'),
+    cons_instruccion:g('cons-instruccion'), cons_estado:g('cons-estado'),
+    frutas_instruccion:g('frutas-instruccion'), frutas_estado:g('frutas-estado'),
+    junta_pendientes:g('junta-pendientes'),
+    junta_proyectos_publicos:g('junta-proyectos-publicos'),
+    junta_proyectos_inmobiliarios:g('junta-proyectos-inmobiliarios'),
+    junta_financiero:g('junta-financiero'),
+    junta_decision_estrategica:g('junta-decision-estrategica'),
+    junta_posicion:g('junta-posicion'),
+    junta_agenda_reunion:g('junta-agenda-reunion'),
+    junta_alertas:g('junta-alertas'),
+    sint_decisiones:g('sint-decisiones'), sint_compromisos:g('sint-compromisos'),
+    sint_senal:g('sint-senal'), sint_manana:g('sint-manana'),
+    ia_arranque:g('ia-arranque-output')||'',
+    ia_cierre:g('ia-cierre-output')||''
+  };
+  PANELES.forEach(p=>{ data['notas_'+p]=JSON.stringify(notasDB[p]); });
+  try{ window.storage.set(getDayKey(),JSON.stringify(data)); }catch(e){}
+  localStorage.setItem(getDayKey(),JSON.stringify(data));
+  // Sync con Google Sheets
+  try{
+    const url=getScriptUrl_B();
+    if(url){
+      fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({artefacto:'briefing',clave:getDayKey(),valor:data})})
+        .then(()=>{ let el=document.getElementById('_sb'); if(!el){el=document.createElement('div');el.id='_sb';el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';document.body.appendChild(el);} el.textContent='✓ Sincronizado con Google Sheets';el.style.background='#EAF5EE';el.style.color='#1A7A3C';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2500); })
+        .catch(()=>{});
+    }
+  }catch(e){}
+  document.getElementById('footer-status').textContent='✓ Guardado — '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  renderHistorial();
+}
+async function cargarDia(){
+  const key=getDayKey();
+  let data=null;
+  // Intentar cargar desde Google Sheets primero
+  try{
+    const url=getScriptUrl_B();
+    if(url){
+      const r=await fetch(`${url}?${new URLSearchParams({artefacto:'briefing',clave:key})}`);
+      const d=await r.json();
+      if(d.ok!==false && d.data) data=typeof d.data==='string'?JSON.parse(d.data):d.data;
+    }
+  }catch(e){}
+  if(!data){ try{ const r=window.storage.get(key); if(r&&r.value) data=JSON.parse(r.value); }catch(e){} }
+  if(!data){ const r=localStorage.getItem(key); if(r) data=JSON.parse(r); }
+  if(!data) return;
+  s('prioridad1',data.prioridad1); s('razon1',data.razon1);
+  s('inst-asistente',data.inst_asistente); s('pendientes-raw',data.pendientes_raw);
+  s('ev-instruccion',data.ev_instruccion); s('ev-estado',data.ev_estado);
+  s('cons-instruccion',data.cons_instruccion); s('cons-estado',data.cons_estado);
+  s('frutas-instruccion',data.frutas_instruccion); s('frutas-estado',data.frutas_estado);
+  s('junta-pendientes',data.junta_pendientes);
+  s('junta-proyectos-publicos',data.junta_proyectos_publicos);
+  s('junta-proyectos-inmobiliarios',data.junta_proyectos_inmobiliarios);
+  s('junta-financiero',data.junta_financiero);
+  s('junta-decision-estrategica',data.junta_decision_estrategica);
+  s('junta-posicion',data.junta_posicion);
+  s('junta-agenda-reunion',data.junta_agenda_reunion);
+  s('junta-alertas',data.junta_alertas);
+  s('sint-decisiones',data.sint_decisiones); s('sint-compromisos',data.sint_compromisos);
+  s('sint-senal',data.sint_senal); s('sint-manana',data.sint_manana);
+  try{ reuniones=JSON.parse(data.reuniones||'[]'); }catch(e){ reuniones=[]; }
+  try{ decisionesLista=JSON.parse(data.decisiones||'[]'); }catch(e){ decisionesLista=[]; }
+  PANELES.forEach(p=>{ try{ notasDB[p]=JSON.parse(data['notas_'+p]||'[]'); }catch(e){ notasDB[p]=[]; } });
+  renderReuniones(); renderDecisiones();
+  PANELES.forEach(p=>renderNotas(p));
+  if(data.ia_arranque){ const el=document.getElementById('ia-arranque-output'); if(el){ el.textContent=data.ia_arranque; document.getElementById('ia-arranque-box').style.display='block'; } }
+  updateStats();
+}
+function renderHistorial(){
+  const lista=document.getElementById('historial-lista');
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(KEY)) keys.push(k); }
+  keys.sort().reverse();
+  if(!keys.length){ lista.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Aún no hay días guardados.</div>'; return; }
+  lista.innerHTML=keys.slice(0,14).map(k=>{
+    let d; try{ d=JSON.parse(localStorage.getItem(k)||'{}'); }catch(e){ d={}; }
+    const fecha=k.replace(KEY,'');
+    const p1=d.prioridad1||'(sin prioridad)';
+    const sd=d.sint_decisiones||'';
+    const totalNotas=PANELES.reduce((acc,p)=>{ try{ return acc+JSON.parse(d['notas_'+p]||'[]').length; }catch(e){ return acc; } },0);
+    return `<div class="hist-item">
+      <div class="hist-date">${fecha}${totalNotas?' · '+totalNotas+' notas':''}</div>
+      <div class="hist-content"><strong>Prioridad #1:</strong> ${p1.substring(0,80)}${p1.length>80?'...':''}</div>
+      ${sd?`<div class="hist-content" style="margin-top:3px;"><strong>Decisiones:</strong> ${sd.substring(0,100)}${sd.length>100?'...':''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function limpiarHistorial(){
+  if(!confirm('¿Borrar todo el historial?')) return;
+  const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(KEY)) keys.push(k); }
+  keys.forEach(k=>localStorage.removeItem(k)); renderHistorial();
+}
+function nuevodia(){
+  if(!confirm('¿Comenzar nuevo día? El contenido se borrará (el día guardado queda en el historial).')) return;
+  ['prioridad1','razon1','inst-asistente','pendientes-raw','ev-instruccion','ev-estado','cons-instruccion','cons-estado','frutas-instruccion','frutas-estado','junta-pendientes','junta-proyectos-publicos','junta-proyectos-inmobiliarios','junta-financiero','junta-decision-estrategica','junta-posicion','junta-agenda-reunion','junta-alertas','sint-decisiones','sint-compromisos','sint-senal','sint-manana','cierre-audio','acta-texto','reunion-contexto','arranque-audio-raw','agenda-audio-raw','decisiones-audio-raw','emp-audio-raw','junta-audio-raw'].forEach(id=>s(id,''));
+  reuniones=[]; decisionesLista=[];
+  PANELES.forEach(p=>{ notasDB[p]=[]; });
+  renderReuniones(); renderDecisiones(); PANELES.forEach(p=>renderNotas(p));
+  document.getElementById('ia-arranque-box').style.display='none';
+  document.getElementById('ia-cierre-output').style.display='none';
+  updateStats();
+}
+
+// ---- IA GENERAL ----
+async function llamarIA(prompt, outputId){
+  const el=document.getElementById(outputId);
+  if(!el) return;
+  el.style.display='block'; el.classList.add('loading'); el.textContent='Procesando con IA...';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const texto=data.content?.map(b=>b.text||'').join('\n')||'Sin respuesta.';
+    el.classList.remove('loading'); el.textContent=texto; return texto;
+  }catch(err){
+    el.classList.remove('loading');
+    el.textContent='No se pudo conectar con IA. Copia el contenido y pégalo en Claude directamente.';
+  }
+}
+
+// ---- ACTUALIZAR DESDE AUDIO POR PANEL ----
+async function actualizarDesdeAudio(panel){
+  const rawIds={ arranque:'arranque-audio-raw', agenda:'agenda-audio-raw', decisiones:'decisiones-audio-raw', emprendimientos:'emp-audio-raw', cierre:'cierre-audio', junta:'junta-audio-raw' };
+  const outputIds={ arranque:'arranque-audio-output', agenda:'agenda-audio-output', decisiones:'decisiones-audio-output', emprendimientos:'emprendimientos-audio-output', cierre:'ia-cierre-output', junta:'junta-audio-output' };
+  const rawId=rawIds[panel];
+  const texto=g(rawId);
+  if(!texto.trim()){ alert('Primero pega el texto o la transcripción de tu audio.'); return; }
+
+  const outputEl=document.getElementById(outputIds[panel]);
+  if(outputEl){ outputEl.style.display='block'; outputEl.classList.add('loading'); outputEl.textContent='Procesando...'; }
+
+  const prompts={
+    arranque:`Analiza este texto del inicio del día de trabajo de un Gerente General de una EICE colombiana con 3 emprendimientos activos.
+TEXTO: ${texto}
+Extrae y responde SOLO en JSON válido sin markdown:
+{"prioridad1":"la tarea más urgente e importante del día","razon1":"por qué es la más importante","inst_asistente":"instrucción para el asistente sobre correos y WhatsApp","resumen":"resumen ejecutivo en 2 líneas de los pendientes del día"}`,
+
+    agenda:`Analiza este texto y extrae TODAS las reuniones mencionadas. Responde SOLO en JSON válido sin markdown:
+TEXTO: ${texto}
+{"reuniones":[{"hora":"HH:MM o vacio si no se menciona","desc":"descripción de la reunión"}]}`,
+
+    decisiones:`Analiza este texto (puede ser un acta, correo o audio) y extrae las decisiones y pendientes.
+TEXTO: ${texto}
+Responde SOLO en JSON válido sin markdown:
+{"decisiones_criterio":["decisión 1 que requiere el criterio del gerente","decisión 2"],"delegables":["tarea delegable 1 con responsable sugerido"],"compromisos":["compromiso 1: quién hace qué para cuándo"],"señal":"algo importante de fondo que emerge del texto"}`,
+
+    emprendimientos:`Analiza este texto sobre los emprendimientos de un directivo y actualiza la información de cada uno.
+TEXTO: ${texto}
+Responde SOLO en JSON válido sin markdown:
+{"ev_estado":"estado actual de Red EV si se menciona, sino cadena vacía","ev_instruccion":"instrucción para socios de EV si aplica","cons_estado":"estado de Consultoría IA si se menciona","cons_instruccion":"instrucción para equipo de Consultoría si aplica","frutas_estado":"estado de Frutas si se menciona","frutas_instruccion":"instrucción para equipo de Frutas si aplica","resumen":"qué pasó en los emprendimientos hoy en 2 líneas"}`,
+
+    cierre:`Analiza este texto del cierre del día y genera la síntesis completa.
+TEXTO: ${texto}
+Responde SOLO en JSON válido sin markdown:
+{"sint_decisiones":"decisiones tomadas hoy","sint_compromisos":"compromisos adquiridos con responsable y fecha","sint_senal":"señal o novedad más importante del día","sint_manana":"pendientes críticos para mañana","acta":"acta ejecutiva del día en máximo 5 líneas","briefing_manana":"bríefing del día siguiente listo para el arranque de las 7:30am"}`,
+
+    junta:`Analiza este texto sobre la empresa de gestión de proyectos públicos, privados e inmobiliarios donde el hablante es asesor de junta directiva.
+TEXTO: ${texto}
+Responde SOLO en JSON válido sin markdown:
+{"junta_proyectos_publicos":"estado de proyectos públicos y público-privados mencionados","junta_proyectos_inmobiliarios":"estado de proyectos inmobiliarios mencionados","junta_financiero":"información financiera relevante mencionada","junta_decision_estrategica":"decisión estratégica pendiente identificada","junta_posicion":"posición o recomendación del asesor si se menciona","junta_alertas":"alertas o urgencias identificadas","resumen":"resumen de lo más importante en 2 líneas"}`
+  };
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompts[panel]}]})
+    });
+    const data=await res.json();
+    const rawJson=data.content?.map(b=>b.text||'').join('').trim();
+    let parsed;
+    try{ parsed=JSON.parse(rawJson.replace(/```json|```/g,'').trim()); }
+    catch(e){ throw new Error('JSON inválido'); }
+
+    // Aplicar campos según el panel
+    const mapeo={
+      prioridad1:'prioridad1', razon1:'razon1', inst_asistente:'inst-asistente',
+      ev_estado:'ev-estado', ev_instruccion:'ev-instruccion',
+      cons_estado:'cons-estado', cons_instruccion:'cons-instruccion',
+      frutas_estado:'frutas-estado', frutas_instruccion:'frutas-instruccion',
+      junta_proyectos_publicos:'junta-proyectos-publicos',
+      junta_proyectos_inmobiliarios:'junta-proyectos-inmobiliarios',
+      junta_financiero:'junta-financiero',
+      junta_decision_estrategica:'junta-decision-estrategica',
+      junta_posicion:'junta-posicion',
+      junta_alertas:'junta-alertas',
+      sint_decisiones:'sint-decisiones', sint_compromisos:'sint-compromisos',
+      sint_senal:'sint-senal', sint_manana:'sint-manana'
+    };
+    let actualizados=0;
+    Object.entries(parsed).forEach(([key,val])=>{
+      if(val&&typeof val==='string'&&val.trim()&&mapeo[key]){
+        s(mapeo[key],val.trim()); actualizados++;
+      }
+    });
+
+    // Reuniones del panel agenda
+    if(panel==='agenda'&&parsed.reuniones&&Array.isArray(parsed.reuniones)){
+      parsed.reuniones.forEach(r=>{ if(r.desc&&r.desc.trim()) reuniones.push({hora:r.hora||'--:--',desc:r.desc,done:false}); });
+      renderReuniones(); actualizados+=parsed.reuniones.length;
+    }
+    // Decisiones extraídas
+    if(panel==='decisiones'){
+      if(parsed.decisiones_criterio) parsed.decisiones_criterio.forEach(t=>{ if(t.trim()) decisionesLista.push({texto:t,tipo:'red',done:false}); });
+      renderDecisiones();
+    }
+
+    // Mostrar resultado
+    if(outputEl){
+      outputEl.classList.remove('loading');
+      const resumen=parsed.resumen||parsed.acta||parsed.briefing_manana||'';
+      outputEl.textContent=actualizados>0
+        ?`✓ ${actualizados} campos actualizados.${resumen?'\n\n'+resumen:''}`
+        :'El texto no contenía suficiente información estructurada. Se guardó como nota.';
+    }
+    // Guardar el texto como nota del panel
+    agregarNotaPanel(panel,'audio',texto);
+    document.getElementById(rawId).value='';
+    updateStats(); guardarDia();
+
+  }catch(err){
+    if(outputEl){ outputEl.classList.remove('loading'); outputEl.textContent='No se pudo conectar con IA. El texto se guardó como nota para uso manual.'; }
+    agregarNotaPanel(panel,'audio',texto);
+    document.getElementById(rawId).value='';
+  }
+}
+
+// ---- IA ESPECÍFICAS ----
+async function generarConIA(){
+  const raw=g('pendientes-raw');
+  if(!raw.trim()){ alert('Primero pega tus pendientes del día en el campo de texto del Arranque.'); showPanel('arranque'); return; }
+  document.getElementById('ia-arranque-box').style.display='block';
+  const prompt=`Soy Gerente General de una EICE en Colombia con asesoría de junta y 3 emprendimientos activos (Red EV en operación, Consultoría IA con 3 clientes piloto, Frutas en desarrollo).
+Mis pendientes de hoy: ${raw}
+Clasifícalos:
+🔴 PRIORIDAD #1 DEL DÍA\n[Solo una, con justificación de 2 líneas]
+📋 AGENDA Y REUNIONES DETECTADAS\n[Lista con hora si se menciona]
+🧩 DECISIONES QUE REQUIEREN MI CRITERIO\n[Solo las que no puede resolver otro]
+✅ LO QUE PUEDO DELEGAR HOY\n[Con sugerencia de a quién]
+⚡ SEÑAL A ATENDER\n[Algo de fondo que merece atención estratégica]`;
+  await llamarIA(prompt,'ia-arranque-output');
+  guardarDia();
+}
+async function prepararReunion(){
+  const ctx=g('reunion-contexto');
+  if(!ctx.trim()){ alert('Escribe el contexto de la reunión primero.'); return; }
+  const prompt=`Tengo una reunión en 30 minutos. Contexto: ${ctx}
+Soy Gerente General de una EICE en Colombia. Dame:
+1) Los 3 puntos clave que debo tener claros antes de entrar (máximo 2 líneas c/u)
+2) La pregunta más importante que debo hacerle al interlocutor
+3) El resultado ideal de esta reunión en una sola línea
+4) Un mensaje de cierre que deje compromisos concretos`;
+  await llamarIA(prompt,'ia-reunion-output');
+}
+async function generarCierre(){
+  const audio=g('cierre-audio');
+  const dec=g('sint-decisiones'), comp=g('sint-compromisos'), sen=g('sint-senal'), man=g('sint-manana');
+  const contenido=audio||[dec,comp,sen,man].filter(Boolean).join('\n');
+  if(!contenido.trim()){ alert('Pega el audio transcrito o completa los campos de síntesis.'); return; }
+  const hoy=new Date();
+  const prompt=`Cierre del día ${DIAS[hoy.getDay()]} ${hoy.getDate()} de ${MESESL[hoy.getMonth()]}.
+Resumen de lo que ocurrió hoy: ${contenido}
+Genera:
+📋 ACTA EJECUTIVA DEL DÍA (máximo 6 líneas)
+📤 INSTRUCCIONES PARA EQUIPOS MAÑANA\nRed EV: ...\nConsultoría IA: ...\nFrutas: ...
+🌅 BRÍEFING DEL DÍA SIGUIENTE\nPrioridad #1: ...\nReuniones a preparar: ...\nDecisiones pendientes: ...\nSeñal a monitorear: ...`;
+  document.getElementById('ia-cierre-output').style.display='block';
+  await llamarIA(prompt,'ia-cierre-output');
+  guardarDia();
+}
+
+// ---- COPIAR PROMPT ----
+function copiarPrompt(id){
+  const el=document.getElementById(id); if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    el.style.background='rgba(255,255,255,.95)';
+    setTimeout(()=>el.style.background='',800);
+    document.getElementById('footer-status').textContent='✓ Prompt copiado — pégalo en el Proyecto de Claude';
+    setTimeout(updateStats,2000);
+  });
+}
+
+// ---- FUNCIONES ESPECÍFICAS JUNTA ----
+async function prepararReunionJunta(){
+  const agenda=g('junta-agenda-reunion');
+  const proyP=g('junta-proyectos-publicos');
+  const proyI=g('junta-proyectos-inmobiliarios');
+  const dec=g('junta-decision-estrategica');
+  const alertas=g('junta-alertas');
+  const ctx=[agenda,proyP,proyI,dec,alertas].filter(Boolean).join('\n');
+  if(!ctx.trim()){ alert('Completa al menos la agenda de la reunión o el estado de proyectos.'); return; }
+  const prompt=`Soy asesor de junta directiva de una empresa de gestión de proyectos públicos, privados e inmobiliarios que fundé hace 6 años. Tengo reunión de junta hoy al mediodía.
+
+Contexto:
+Agenda de la reunión: ${agenda||'no definida'}
+Proyectos públicos/público-privados: ${proyP||'no reportado'}
+Proyectos inmobiliarios: ${proyI||'no reportado'}
+Decisión estratégica pendiente: ${dec||'ninguna'}
+Alertas activas: ${alertas||'ninguna'}
+
+Dame:
+1) Los 3 temas más críticos que debo abordar en la reunión de hoy (máximo 2 líneas c/u)
+2) Mi posición recomendada como asesor en el tema más importante
+3) Las preguntas que debo hacerle a la gerencia o al equipo directivo
+4) Los riesgos que debo mencionar aunque nadie los haya traído a la mesa
+5) El acuerdo mínimo que debe salir de esta reunión para que valga la pena`;
+  await llamarIA(prompt,'ia-junta-reunion');
+}
+
+async function analizarJunta(){
+  const proyP=g('junta-proyectos-publicos');
+  const proyI=g('junta-proyectos-inmobiliarios');
+  const fin=g('junta-financiero');
+  const dec=g('junta-decision-estrategica');
+  const pos=g('junta-posicion');
+  const alertas=g('junta-alertas');
+  const ctx=[proyP,proyI,fin,dec,pos,alertas].filter(Boolean).join('\n');
+  if(!ctx.trim()){ alert('Completa el estado de los proyectos antes de analizar.'); return; }
+  const prompt=`Soy asesor de junta directiva de una empresa de gestión de proyectos públicos, privados e inmobiliarios en Colombia.
+
+Estado actual de la empresa:
+Proyectos públicos/público-privados: ${proyP||'no reportado'}
+Proyectos inmobiliarios: ${proyI||'no reportado'}
+Estado financiero: ${fin||'no reportado'}
+Decisión estratégica pendiente: ${dec||'ninguna'}
+Mi posición actual: ${pos||'no definida'}
+Alertas activas: ${alertas||'ninguna'}
+
+Como asesor externo con visión estratégica, dame:
+
+🔴 RIESGO MÁS CRÍTICO QUE VEO COMO ASESOR
+[Lo que puede salir mal si no se atiende esta semana]
+
+📊 DIAGNÓSTICO HONESTO DEL ESTADO DE LA EMPRESA
+[3 líneas sobre la situación real, sin filtros]
+
+🎯 RECOMENDACIÓN ESTRATÉGICA COMO ASESOR
+[Mi posición clara sobre la decisión más importante]
+
+⚡ LO QUE DEBO DECIR EN LA PRÓXIMA REUNIÓN QUE NADIE MÁS VA A DECIR
+[El tema incómodo pero necesario que debo poner sobre la mesa]
+
+📋 SEGUIMIENTOS PRIORITARIOS PARA ESTA SEMANA
+[Máximo 3, ordenados por urgencia]`;
+  await llamarIA(prompt,'ia-junta-analisis');
+}
+
+// ---- LISTENERS ----
+['prioridad1','razon1','inst-asistente','sint-decisiones','sint-compromisos','sint-senal','sint-manana'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener('input',updateStats);
+});
+
+init();
+</script>
+</body>
+</html>
