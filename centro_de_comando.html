@@ -383,13 +383,13 @@ async function syncSave(clave, valor){
       clave: clave,
       valor: typeof valor === 'string' ? valor : JSON.stringify(valor)
     });
-    const res = await fetch(url, {
+    await fetch(url, {
       method: 'POST',
+      mode: 'no-cors',
       headers: {'Content-Type': 'text/plain'},
       body: body
     });
-    const data = await res.json();
-    return data.ok !== false;
+    return true;
   } catch(e){
     console.warn('syncSave error:', e);
     return false;

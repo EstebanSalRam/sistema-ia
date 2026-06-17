@@ -824,11 +824,10 @@ async function guardarDia(){
   try{
     const url=getScriptUrl_B();
     if(url){
-      fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},
+      fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
         body:JSON.stringify({artefacto:'briefing',clave:getDayKey(),valor:data})})
-        .then(r=>r.json())
-        .then(d=>{ let el=document.getElementById('_sb'); if(!el){el=document.createElement('div');el.id='_sb';el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';document.body.appendChild(el);} const ok=d.ok!==false; el.textContent=ok?'✓ Sincronizado con Google Sheets':'⚠ Error al sincronizar: '+d.error;el.style.background=ok?'#EAF5EE':'#FDF3E0';el.style.color=ok?'#1A7A3C':'#9A6400';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',3500); })
-        .catch(()=>{});
+        .then(()=>{ let el=document.getElementById('_sb'); if(!el){el=document.createElement('div');el.id='_sb';el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';document.body.appendChild(el);} el.textContent='✓ Sincronizado con Google Sheets';el.style.background='#EAF5EE';el.style.color='#1A7A3C';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2500); })
+        .catch(()=>{ let el=document.getElementById('_sb'); if(!el){el=document.createElement('div');el.id='_sb';el.style.cssText='position:fixed;bottom:52px;left:0;right:0;text-align:center;font-size:11px;padding:4px;z-index:999;transition:opacity .6s;pointer-events:none;';document.body.appendChild(el);} el.textContent='⚠ Sin conexión — guardado solo local';el.style.background='#FDF3E0';el.style.color='#9A6400';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',3500); });
     }
   }catch(e){}
   document.getElementById('footer-status').textContent='✓ Guardado — '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
