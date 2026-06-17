@@ -1,31 +1,67 @@
 // ============================================================
 // GOOGLE APPS SCRIPT — Servidor de sincronización
-// para los 3 artefactos del Sistema IA de Gerencia
+// Sistema IA de Gerencia — v2
 // ============================================================
-// INSTRUCCIONES DE INSTALACIÓN:
-// 1. Abre Google Sheets → crea un Sheet nuevo en blanco
+// INSTRUCCIONES:
+// 1. Abre el Google Sheet vinculado a este script
 // 2. Menú: Extensiones → Apps Script
-// 3. Borra todo el código que aparece y pega este archivo completo
-// 4. Haz clic en "Guardar" (ícono de disco)
-// 5. Haz clic en "Implementar" → "Nueva implementación"
-// 6. Tipo: "Aplicación web"
-// 7. Ejecutar como: "Yo (tu cuenta Google)"
-// 8. Quién tiene acceso: "Cualquier usuario" (necesario para iOS)
-// 9. Haz clic en "Implementar" → copia la URL que aparece
-// 10. Pega esa URL en los 3 artefactos cuando te lo pidan
+// 3. Reemplaza todo el código con este archivo
+// 4. Guarda (Ctrl+S)
+// 5. Ejecuta la función "setup" UNA VEZ desde el editor
+//    (selecciona "setup" en el desplegable y haz clic en ▶ Ejecutar)
+//    Esto guarda el ID de la hoja en las propiedades del script.
+// 6. Implementar → Administrar implementaciones → edita la implementación
+//    existente → selecciona "Nueva versión" → Implementar
 // ============================================================
 
-const SHEET_NAME_BRIEFING   = 'briefing';
-const SHEET_NAME_SEMANAL    = 'estado_semanal';
-const SHEET_NAME_COMANDO    = 'centro_comando';
+const SHEET_NAME_BRIEFING = 'briefing';
+const SHEET_NAME_SEMANAL  = 'estado_semanal';
+const SHEET_NAME_COMANDO  = 'centro_comando';
+
+// Ejecuta esta función UNA VEZ desde el editor de Apps Script
+function setup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    Logger.log('ERROR: No se encontró hoja activa. Asegúrate de abrir este script desde una Google Sheet (Extensiones → Apps Script).');
+    return;
+  }
+  PropertiesService.getScriptProperties().setProperty('SHEET_ID', ss.getId());
+  Logger.log('✓ Setup completado. Sheet ID guardado: ' + ss.getId());
+}
+
+function getSpreadsheet() {
+  // 1. Intenta con el ID guardado en propiedades (configurado por setup())
+  const props = PropertiesService.getScriptProperties();
+  const ssId  = props.getProperty('SHEET_ID');
+  if (ssId) {
+    return SpreadsheetApp.openById(ssId);
+  }
+
+  // 2. Fallback: intenta getActiveSpreadsheet (funciona en contexto de editor)
+  const active = SpreadsheetApp.getActiveSpreadsheet();
+  if (active) {
+    props.setProperty('SHEET_ID', active.getId());
+    return active;
+  }
+
+  // 3. Crea una hoja nueva automáticamente si no hay ninguna configurada
+  const newSs = SpreadsheetApp.create('Sistema IA — Sync Data');
+  props.setProperty('SHEET_ID', newSs.getId());
+  return newSs;
+}
 
 function doGet(e) {
   try {
     const artefacto = e.parameter.artefacto;
     const clave     = e.parameter.clave;
-    const ss        = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet     = getOrCreateSheet(ss, artefacto);
-    const data      = leerDatos(sheet, clave);
+
+    if (!artefacto || artefacto === 'ping') {
+      return jsonResponse({ ok: true, msg: 'Sistema IA Sync activo', ts: new Date().toISOString() });
+    }
+
+    const ss    = getSpreadsheet();
+    const sheet = getOrCreateSheet(ss, artefacto);
+    const data  = leerDatos(sheet, clave);
     return jsonResponse({ ok: true, data: data });
   } catch(err) {
     return jsonResponse({ ok: false, error: err.message });
@@ -38,8 +74,13 @@ function doPost(e) {
     const artefacto = payload.artefacto;
     const clave     = payload.clave;
     const valor     = payload.valor;
-    const ss        = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet     = getOrCreateSheet(ss, artefacto);
+
+    if (artefacto === 'ping') {
+      return jsonResponse({ ok: true, msg: 'Sistema IA Sync activo', ts: new Date().toISOString() });
+    }
+
+    const ss    = getSpreadsheet();
+    const sheet = getOrCreateSheet(ss, artefacto);
     escribirDatos(sheet, clave, valor);
     return jsonResponse({ ok: true, ts: new Date().toISOString() });
   } catch(err) {
@@ -81,9 +122,9 @@ function leerDatos(sheet, clave) {
 }
 
 function escribirDatos(sheet, clave, valor) {
-  const datos  = sheet.getDataRange().getValues();
+  const datos    = sheet.getDataRange().getValues();
   const valorStr = typeof valor === 'string' ? valor : JSON.stringify(valor);
-  const ahora  = new Date().toISOString();
+  const ahora    = new Date().toISOString();
   for (let i = 1; i < datos.length; i++) {
     if (datos[i][0] === clave) {
       sheet.getRange(i + 1, 2).setValue(valorStr);
@@ -102,6 +143,4 @@ function jsonResponse(obj) {
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
-// ============================================================
-// FIN DEL SCRIPT
 // ============================================================

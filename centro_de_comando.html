@@ -822,7 +822,7 @@ async function guardar(){
   const data={estados:JSON.stringify(estadosTareas),tareas:JSON.stringify(tareasPropias)};
   try{window.storage.set(KEY+'data',JSON.stringify(data));}catch(e){}
   localStorage.setItem(KEY+'data',JSON.stringify(data));
-  const ok = await syncSave(KEY+'data', data).then(()=>true).catch(()=>false);
+  const ok = await syncSave(KEY+'data', data);
   mostrarStatusSync(ok);
 }
 async function cargar(){
